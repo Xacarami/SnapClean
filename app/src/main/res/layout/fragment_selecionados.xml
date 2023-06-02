@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#161618">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="66dp"
+        android:text="Selecionados para Remoção"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout1"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="14dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:context=".MainActivity">
+
+        <ImageButton
+            android:id="@+id/imageButton2"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/background_circle"
+            android:scaleX="0.6"
+            android:scaleY="0.6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@mipmap/ic_lixo_2_riscos"
+            app:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/voltar_selecionados"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/background_circle"
+            android:onClick="testeHamburger"
+            android:scaleX="0.6"
+            android:scaleY="0.6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@mipmap/ic_voltar_seta"
+            app:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/pasta_cima"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/background_circle"
+            android:onClick="testePasta"
+            android:scaleX="0.6"
+            android:scaleY="0.6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imageButton2"
+            app:layout_constraintStart_toEndOf="@+id/voltar_selecionados"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@mipmap/ic_pasta"
+            app:tint="#FFFFFF" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:context=".MainActivity">
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="140dp"
+            android:layout_height="40dp"
+            android:backgroundTint="#FF0000"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingLeft="12dp"
+            android:paddingTop="3dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="3dp"
+            android:text="Apagar tudo"
+            android:textAlignment="center"
+            android:textSize="14sp"
+            android:typeface="normal"
+            app:icon="@mipmap/ic_lixo_2_riscos"
+            app:iconPadding="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="140dp"
+            android:layout_height="40dp"
+            android:backgroundTint="#FF434343"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingLeft="12dp"
+            android:paddingTop="3dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="3dp"
+            android:text="Recuperar"
+            android:textAlignment="center"
+            android:textSize="14sp"
+            android:typeface="normal"
+            app:icon="@mipmap/ic_restore"
+            app:iconPadding="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

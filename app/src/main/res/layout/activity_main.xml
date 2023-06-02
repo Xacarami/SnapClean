@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.drawerlayout.widget.DrawerLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_principal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+        <TextView
+            android:id="@+id/hello"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="@string/app_name"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/textoTesteIcone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Nenhum Botao Pressionado"
+            app:layout_constraintBottom_toTopOf="@+id/hello"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout1"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="14dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:context=".MainActivity">
+
+            <ImageButton
+                android:id="@+id/lixeira"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/background_circle"
+                android:scaleX="0.6"
+                android:scaleY="0.6"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                app:srcCompat="@mipmap/ic_lixo_2_riscos"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/voltar_selecionados"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/background_circle"
+                android:onClick="testeHamburger"
+                android:scaleX="0.6"
+                android:scaleY="0.6"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@mipmap/ic_hamburger_1"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/imageButton3"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="60dp"
+                android:background="@drawable/background_circle"
+                android:onClick="testeInfo"
+                android:scaleX="0.6"
+                android:scaleY="0.6"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/lixeira"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@mipmap/ic_info"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/pasta_cima"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:background="@drawable/background_circle"
+                android:scaleX="0.6"
+                android:scaleY="0.6"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/voltar_selecionados"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@mipmap/ic_pasta"
+                app:tint="#FFFFFF" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="14dp"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:context=".MainActivity">
+
+            <ImageButton
+                android:id="@+id/imageButton5"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@android:color/transparent"
+                android:onClick="testeVerImagens"
+                android:scaleX="1.3"
+                android:scaleY="1.3"
+                android:src="@mipmap/ic_quadrado_lista"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/voltar_imagem"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/background_circle"
+                android:onClick="testeVoltarImagem"
+                android:scaleX="0.7"
+                android:scaleY="0.7"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@mipmap/ic_voltar_foto"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/aceitar_imagem"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="60dp"
+                android:background="@android:color/transparent"
+                android:onClick="testeAceitarImagem"
+                android:scaleX="1.35"
+                android:scaleY="1.35"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageButton5"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@mipmap/ic_confere_verde"
+                app:tint="#2EFF00" />
+
+            <ImageButton
+                android:id="@+id/negar_imagem"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:background="@android:color/transparent"
+                android:onClick="testeNegarImagem"
+                android:scaleX="1.5"
+                android:scaleY="1.5"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/voltar_imagem"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@mipmap/ic_x_vermelho"
+                app:tint="#FF0101" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageButton
+            android:id="@+id/imageButton6"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="94dp"
+            android:background="@drawable/background_circle"
+            android:scaleX="0.8"
+            android:scaleY="0.8"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@mipmap/ic_zoom_out_2"
+            app:tint="#FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/imageButton8"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="21dp"
+            android:background="@drawable/background_circle"
+            android:scaleX="0.8"
+            android:scaleY="0.8"
+            app:layout_constraintBottom_toTopOf="@+id/imageButton6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@mipmap/ic_zoom_in_2"
+            app:tint="#FFFFFF" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout2"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginBottom="12dp"
+            app:layout_constraintBottom_toBottomOf="@+id/hello"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="É preciso selecionar uma pasta"
+                android:textColor="@android:color/darker_gray"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pasta_central" />
+
+            <ImageButton
+                android:id="@+id/pasta_central"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@android:color/transparent"
+                android:onClick="clickPasta"
+                android:scaleX="2"
+                android:scaleY="2"
+                android:src="@mipmap/ic_pasta2"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_selecionados"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/navigation_drawer"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#B5001949"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            android:translationY="150dp"
+            tools:layout_editor_absoluteX="1dp"
+            tools:layout_editor_absoluteY="286dp" />
+
+    </LinearLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>
+
