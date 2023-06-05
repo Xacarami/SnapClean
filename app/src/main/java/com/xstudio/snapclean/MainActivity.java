@@ -1,6 +1,7 @@
 package com.xstudio.snapclean;
 
 import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.list;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -43,6 +44,9 @@ import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -57,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
     private Uri pastaSelecionada;
     private ImageView imageView;
     private VideoView videoView;
+    private ConstraintLayout layoutPastaCentral;
+    private int imagensCarregadas = 0;
+    private int offsetImagens = 10;
 
     private static final String[] STORAGE_PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -151,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 //pastaSelecionada = getFolderPathFromUri(data.getData());
                 pastaSelecionada = data.getData();
                 System.out.println("uma linha antes de chamar a função exibirImagem");
-                exibirImagemPastaSelecionada(pastaSelecionada);
+                //exibirImagemPastaSelecionada(pastaSelecionada, offsetImagens);
             }
         }
     }
@@ -167,13 +174,6 @@ public class MainActivity extends AppCompatActivity {
             path = cursor.getString(columnIndex);
             cursor.close();
             return path;
-            /*
-            DocumentFile documentFile = DocumentFile.fromTreeUri(this, uri);
-            if(documentFile != null && documentFile.isDirectory()){
-                folderPath = documentFile.getUri();
-            }
-             */
-
         }
         return path;
     }
@@ -186,13 +186,13 @@ public class MainActivity extends AppCompatActivity {
                         //String pastaUri = .getPath();
                         //pastaSelecionada = getFolderPathFromUri(data.getData());
                         pastaSelecionada = data.getData();
-                        exibirImagemPastaSelecionada(data.getData());
+                        exibirImagemPastaSelecionada(data.getData(), offsetImagens);
                     }
                 }
             });
 
 
-    private void exibirImagemPastaSelecionada(Uri pastaSelecionada) {
+    private void exibirImagemPastaSelecionada(Uri pastaSelecionada, int quantidadeDeImagens) {
         System.out.println("função exibirImagemPastaSelecionada foi acionada");
         if (pastaSelecionada != null) {
 
@@ -200,70 +200,68 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(pastaSelecionada);
 
             DocumentFile arquivos = DocumentFile.fromTreeUri(this, pastaSelecionada);
+            DocumentFile[] listaDeArquivos = arquivos.listFiles();
+
+            //Ordena a listaDeArquivos do último modificado ao primeiro (pastas ficam no fim)
+            Arrays.sort(listaDeArquivos, new Comparator<DocumentFile>() {
+                @Override
+                public int compare(DocumentFile file1, DocumentFile file2){
+                    return Long.compare(file2.lastModified(), file1.lastModified());
+                }
+            });
 
 
-            /*
-            File pasta = new File(pastaSelecionada);
-            File[] arquivos = pasta.listFiles();
+            imageView = findViewById(R.id.view_imagem);
+            videoView = findViewById(R.id.view_video);
+            layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
 
-            boolean teste = pasta.isDirectory();
+            System.out.println("************"+listaDeArquivos[0].getType()+ " - " + listaDeArquivos[0].getName());
+            System.out.println("************"+listaDeArquivos[1].getType()+ " - " + listaDeArquivos[1].getName());
+            System.out.println("************"+listaDeArquivos[2].getType()+ " - " + listaDeArquivos[2].getName());
+            System.out.println("************"+listaDeArquivos[3].getType()+ " - " + listaDeArquivos[3].getName());
+            int tamanhoLista = listaDeArquivos.length;
 
-            System.out.println("testando diretório: " + teste);
-            System.out.println("arquivos: " + arquivos);
-            */
-            //if (arquivos != null && arquivos.length > 0){
-            if (arquivos != null && arquivos.length() > 0)
-                //for (File arquivo : arquivos){
-                for (DocumentFile arquivo : arquivos.listFiles()) {
-                    System.out.println(arquivo.getName());
-                    System.out.println(arquivo.getUri());
-                    System.out.println(arquivo.getType());
-                    System.out.println("---------------------");
+            if (arquivos != null && arquivos.length() > 0){
+                layoutPastaCentral.setVisibility(View.GONE);
+                for (int i = imagensCarregadas; i < imagensCarregadas + quantidadeDeImagens && i < tamanhoLista; i++){
+                //for (DocumentFile arquivo : listaDeArquivos) {
+                    System.out.println(i);
+                    DocumentFile arquivo = listaDeArquivos[i];
 
                     String caminhoArquivo = arquivo.getUri().toString();
+
                     String extensao = arquivo.getType();
 
-                    System.out.println(isVideo(extensao));
-                    System.out.println(isImagem(extensao));
-                    imageView = findViewById(R.id.view_imagem);
-                    videoView = findViewById(R.id.view_video);
+                    if (arquivo.getType() != null){
+                        if (isImagem(extensao)){
+                            imageView.setVisibility(View.VISIBLE);
+                            videoView.setVisibility(View.GONE);
 
+                            Glide.with(this)
+                                    .load(caminhoArquivo)
+                                    .into(imageView);
+                        } else if (isVideo(extensao)) {
+                            imageView.setVisibility(View.GONE);
+                            videoView.setVisibility(View.VISIBLE);
 
-                    if (isImagem(extensao)){
-                        imageView.setVisibility(View.VISIBLE);
-                        videoView.setVisibility(View.GONE);
-                        System.out.println("É uma imagem");
-                        System.out.println(caminhoArquivo);
-
-                        Glide.with(this)
-                                .load(caminhoArquivo)
-                                .into(imageView);
-                    } else if (isVideo(extensao)) {
-                        imageView.setVisibility(View.GONE);
-                        videoView.setVisibility(View.VISIBLE);
-
-                        System.out.println("É um vídeo");
-                        videoView.setVideoPath(caminhoArquivo);
-                        videoView.start();
+                            videoView.setVideoPath(caminhoArquivo);
+                            videoView.start();
+                        } else if (isAudio(extensao)){
+                            System.out.println("um audio ai");
+                        } else {
+                            System.out.println("---------------------");
+                            System.out.println("Aquivo de extensão desconhecida");
+                            System.out.println("Tipo: "+arquivo.getType());
+                            System.out.println("Nome: "+arquivo.getName());
+                            System.out.println("---------------------");
+                        }
+                    } else {
+                        System.out.println("Não tem extensão");
                     }
+                    imagensCarregadas += 1;
                 }
             }
-
-            /*
-            System.out.println(arquivos);
-
-            if (arquivos != null && arquivos.length > 0){
-                String caminhoArquivo = arquivos[0].getAbsolutePath();
-                System.out.println("Entrou no segundo if de exibirImagemPastaSelecionada");
-
-                boolean isImagem = caminhoArquivo.toLowerCase().endsWith(".jpg") || caminhoArquivo.toLowerCase().endsWith(".png") || caminhoArquivo.toLowerCase().endsWith(".jpeg");
-                boolean isVideo = caminhoArquivo.toLowerCase().endsWith(".mp4") || caminhoArquivo.toLowerCase().endsWith(".3gp") || caminhoArquivo.toLowerCase().endsWith(".mp3") || caminhoArquivo.toLowerCase().endsWith(".wmv");
-                VideoView videoView = findViewById(R.id.view_video);
-                ImageView imageView = findViewById(R.id.view_imagem);
-
-                //if (isImagem)
-            }
-            */
+        }
     }
 
     private String getFileExtension(String filePath){
@@ -283,7 +281,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isVideo(String extensao){
-        return extensao.endsWith("mp4") || extensao.endsWith("3gp") || extensao.endsWith("mp3") || extensao.equalsIgnoreCase(".wmv");
+        return extensao.endsWith("mp4") || extensao.endsWith("3gp") || extensao.equalsIgnoreCase(".wmv");
+    }
+
+    private boolean isAudio(String extensao){
+        return extensao.endsWith("wav") || extensao.endsWith("mp3");
     }
 
     @Override
