@@ -1,8 +1,5 @@
 package com.xstudio.snapclean;
 
-import static java.nio.file.Files.isDirectory;
-import static java.nio.file.Files.list;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -19,37 +16,24 @@ import androidx.fragment.app.FragmentTransaction;
 import android.Manifest;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -125,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 abrirFragmentSelecionados();
+                SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.testando, selecionadosFragment)
+                        .commit();
             }
         });
 
@@ -192,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
     AtomicReference<DocumentFile> arquivoAtual = new AtomicReference<>();
     AtomicInteger resultado = new AtomicInteger(0);
     int voltador = 0;
-    int quantidadeApagadas = 0;
+    //int quantidadeApagadas = 0;
     private void exibirImagemPastaSelecionada(Uri pastaSelecionada, int quantidadeDeImagens) {
         if (pastaSelecionada != null) {
             System.out.println("Ta dentro da função exibirImagemPastaSelecionada");
@@ -216,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
             botaoVoltar = findViewById(R.id.voltar_imagem);
             layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
             numeroLixeira = findViewById(R.id.numero_lixeira);
-            numeroLixeira.setText(String.valueOf(quantidadeApagadas));
+            //numeroLixeira.setText(String.valueOf(quantidadeApagadas));
 
             int tamanhoLista = listaDeArquivos.length;
 
@@ -224,14 +212,27 @@ public class MainActivity extends AppCompatActivity {
             View.OnClickListener onClickListener = v -> {
                 if (v.getId() == R.id.negar_imagem){
                     listaDeExclusao.add(arquivoAtual.get());
-                    quantidadeApagadas++;
-                    numeroLixeira.setText(String.valueOf(quantidadeApagadas));
+                    //quantidadeApagadas++;
+                    numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
 
                     System.out.println("Clicou no botao de excluir");
                     System.out.println(listaDeExclusao);
                 } else if (v.getId() == R.id.voltar_imagem){
-                    resultado.set(-2);
-                    voltador = -2;
+                    int indexImagemAnterior = imagensCarregadas -2;
+                    if (indexImagemAnterior >= 0){
+                        DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];
+                        if (listaDeExclusao.contains(imagemAnterior)){
+                            listaDeExclusao.remove(imagemAnterior);
+                            numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
+                        }
+                    }
+                    if (imagensCarregadas > 1){
+                        resultado.set(-2);
+                        voltador = -2;
+                    } else if (imagensCarregadas <= 1){
+                        resultado.set(-1);
+                        voltador = -1;
+                    }
                     System.out.println("Clicou no botao de voltar");
                 }
                 continuarLoop(quantidadeDeImagens + voltador, resultado.get());
@@ -249,11 +250,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void continuarLoop(int quantidadeDeImagens, int ajuste){
-
         for (int i = imagensCarregadas + voltador; i < imagensCarregadas + quantidadeDeImagens && i < tamanhoDaLista; i++){
             //for (DocumentFile arquivo : listaDeArquivos) {
+
             System.out.println("i = " + i);
             System.out.println("Voltador = " + voltador);
+
             DocumentFile arquivo = arrayDeArquivos[i];
 
             String caminhoArquivo = arquivo.getUri().toString();
@@ -284,9 +286,11 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("Tipo: "+arquivo.getType());
                     System.out.println("Nome: "+arquivo.getName());
                     System.out.println("---------------------");
+                    continue;
                 }
             } else {
                 System.out.println("Não tem extensão");
+                continue;
             }
             arquivoAtual.set(arquivo);
             resultado.set(0);
@@ -298,6 +302,10 @@ public class MainActivity extends AppCompatActivity {
             imagensCarregadas += quantidadeDeImagens;
         } else {
             imagensCarregadas += ajuste;
+            if (imagensCarregadas < 0){
+                imagensCarregadas = 0;
+
+            }
         }
     }
 
@@ -350,14 +358,14 @@ public class MainActivity extends AppCompatActivity {
         ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.container_selecionados, new SelecionadosFragment());
+        fragmentTransaction.replace(R.id.container_selecionados, new SelecionadosFragment(listaDeExclusao));
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
         layoutPrincipal.setVisibility(View.GONE);
     }
 
 
-    private ActivityResultLauncher<Intent> folderPickerLauncher;
+    //private ActivityResultLauncher<Intent> folderPickerLauncher;
 
     public void selecionarPasta(){
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
