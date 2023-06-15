@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private VideoView videoView;
     private TextView numeroLixeira;
     private ConstraintLayout layoutPastaCentral;
+    private Boolean pastaJaFoiSelecionada = false;
     private int imagensCarregadas = 0;
     private int offsetImagens = 10;
     ImageButton botaoAvancar;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton botaoVoltar;
     int tirando = 0;
     int continuando = 0;
+    private SelecionadosFragment testeSeJaFoiCriado;
     private ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
 
     private static final String[] STORAGE_PERMISSIONS = {
@@ -81,10 +84,10 @@ public class MainActivity extends AppCompatActivity {
             //Solicitando permissões
             ActivityCompat.requestPermissions(this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
             System.out.println("Permissão talvez negada");
-            hello.setText("Permissões ainda não aceitas");
+            //hello.setText("Permissões ainda não aceitas");
         } else {
             System.out.println("Permissão concedida");
-            hello.setText("Permissões concedidas anteriormente");
+            //hello.setText("Permissões concedidas anteriormente");
         }
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         optionIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                textoTeste = findViewById(R.id.textoTesteIcone);
+                //textoTeste = findViewById(R.id.textoTesteIcone);
                 textoTeste.setText("Apertou icone hamburger");
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
@@ -109,12 +112,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //abrirFragmentSelecionados();
-                SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
-                getSupportFragmentManager().beginTransaction()
-                        //.replace(R.id.testando, selecionadosFragment)
-                        .replace(R.id.container_selecionados, selecionadosFragment)
-                        .commit();
-
+                if (testeSeJaFoiCriado == null){
+                    SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
+                    getSupportFragmentManager().beginTransaction()
+                            //.replace(R.id.testando, selecionadosFragment)
+                            .replace(R.id.container_selecionados, selecionadosFragment)
+                            .commit();
+                } else {
+                    testeSeJaFoiCriado.atualizarListaDeExclusao(listaDeExclusao);
+                }
                 ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
                 layoutPrincipal.setVisibility(View.GONE);
             }
@@ -136,17 +142,48 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ImageButton iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
+        iconeMaisImagens.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("Ta clicando");
+                colocarToast();
+            }
+        });
+
+        ImageButton iconeInfo = findViewById(R.id.info_button);
+        iconeInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("Ta clicando");
+                Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         //Selecionador de pastas
         ImageButton botaoSelecionarPasta1 = findViewById(R.id.pasta_cima);
         ImageButton botaoSelecionarPasta2 = findViewById(R.id.pasta_central);
 
-        View.OnClickListener selecionarPastaClickListener = v -> selecionarPasta();
+        System.out.println(listaDeExclusao);
+        View.OnClickListener selecionarPastaClickListener = v -> {
+            System.out.println(pastaJaFoiSelecionada);
+            if(!pastaJaFoiSelecionada){
+                selecionarPasta();
+                System.out.println(listaDeExclusao);
+            } else {
+                System.out.println("Pasta ja selecionada, e clicou em abrir mais uma");
+            }
+
+        };
 
         botaoSelecionarPasta1.setOnClickListener(selecionarPastaClickListener);
         botaoSelecionarPasta2.setOnClickListener(selecionarPastaClickListener);
 
 
+    }
+    public void colocarToast(){
+        Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -201,6 +238,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            System.out.println("Acabou de selecionar a pasta");
+            pastaJaFoiSelecionada = true;
+
             imageView = findViewById(R.id.view_imagem);
             videoView = findViewById(R.id.view_video);
             botaoAvancar = findViewById(R.id.aceitar_imagem);
@@ -215,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
             View.OnClickListener onClickListener = v -> {
                 if (v.getId() == R.id.negar_imagem){
-                    listaDeExclusao.add(arquivoAtual.get());
+                    listaDeExclusao.add(0, arquivoAtual.get());
                     //quantidadeApagadas++;
                     numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
 
@@ -350,10 +390,10 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                 && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 System.out.println("PERMISSÕES GARANTIDAS!!!!!!!!!!!!");
-                hello.setText("permissoes concedidas");
+                //hello.setText("permissoes concedidas");
             } else {
                 System.out.println("PERMISSÕES NEGADAS");
-                hello.setText("É necessário que você aceite as permissões");
+                //hello.setText("É necessário que você aceite as permissões");
             }
         }
     }
@@ -381,18 +421,27 @@ public class MainActivity extends AppCompatActivity {
         selecionarPastaLauncher.launch(intent);
     }
 
+    /*
     public void testeInfo(View view){
-        textoTeste = findViewById(R.id.textoTesteIcone);
+        //textoTeste = findViewById(R.id.textoTesteIcone);
         textoTeste.setText("Apertou icone info - Testa caminho da pasta");
 
     }
 
+     */
+
     public void testeHamburger(View view){
-        textoTeste = findViewById(R.id.textoTesteIcone);
-        textoTeste.setText("Apertou icone hamburger");
+        //textoTeste = findViewById(R.id.textoTesteIcone);
+        //textoTeste.setText("Apertou icone hamburger");
     }
+
+
+    /*
     public void testeVerImagens(View view){
-        textoTeste = findViewById(R.id.textoTesteIcone);
+        //textoTeste = findViewById(R.id.textoTesteIcone);
         textoTeste.setText("Apertou icone Ver Imagens");
+
     }
+
+     */
 }
