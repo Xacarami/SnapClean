@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
 
 
-        ImageButton optionIcon = findViewById(R.id.voltar_selecionados);
+        ImageButton optionIcon = findViewById(R.id.opcoes);
         optionIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -108,11 +108,15 @@ public class MainActivity extends AppCompatActivity {
         icLixeira1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                abrirFragmentSelecionados();
+                //abrirFragmentSelecionados();
                 SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.testando, selecionadosFragment)
+                        //.replace(R.id.testando, selecionadosFragment)
+                        .replace(R.id.container_selecionados, selecionadosFragment)
                         .commit();
+
+                ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
+                layoutPrincipal.setVisibility(View.GONE);
             }
         });
 
@@ -354,15 +358,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*
     private void abrirFragmentSelecionados(){
-        ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
+        //ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.container_selecionados, new SelecionadosFragment(listaDeExclusao));
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+        ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
         layoutPrincipal.setVisibility(View.GONE);
     }
+    */
 
 
     //private ActivityResultLauncher<Intent> folderPickerLauncher;

@@ -78,7 +78,7 @@
                 app:tint="#FFFFFF" />
 
             <ImageButton
-                android:id="@+id/voltar_selecionados"
+                android:id="@+id/opcoes"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:background="@drawable/background_circle"
@@ -115,7 +115,7 @@
                 android:scaleX="0.6"
                 android:scaleY="0.6"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/voltar_selecionados"
+                app:layout_constraintStart_toEndOf="@+id/opcoes"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@mipmap/ic_pasta"
                 app:tint="#FFFFFF" />

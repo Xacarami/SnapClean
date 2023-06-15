@@ -65,7 +65,4 @@ public class SelecionadosFragment extends Fragment {
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         recyclerView.setAdapter(new ImagemAdapter(listaDeExclusao));
     }
-
-
-
 }

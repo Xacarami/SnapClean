@@ -138,14 +138,14 @@
             android:id="@+id/testando"
             android:layout_width="match_parent"
             android:layout_height="530dp"
-            tools:ignore="MissingConstraints"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="100">
+            android:layout_marginTop="100dp"
+            app:layout_constraintTop_toTopOf="parent"
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="332dp"
+                android:layout_height="493dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
