@@ -1,10 +1,12 @@
 package com.xstudio.snapclean.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.xstudio.snapclean.MainActivity;
 import com.xstudio.snapclean.R;
 
 import java.util.List;
@@ -39,13 +42,51 @@ public class SelecionadosFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(SelecionadosViewModel.class);
     }
 
+
+    //para que o ícone de pasta aqui possa executar uma função na MainActivity.java
+    public interface OnFragmentInteractionListener {
+        void onPastaCimaSelecionadosClicked();
+    }
+
+    private OnFragmentInteractionListener listener;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            listener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " deve implementar OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
+
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+
         //inflar o layout do fragment
         View rootView = inflater.inflate(R.layout.fragment_selecionados, container, false);
 
         ConstraintLayout layoutPrincipal = getActivity().findViewById(R.id.layout_principal);
         ImageButton voltarSelecionados = rootView.findViewById(R.id.voltar_selecionados);
+        ImageView pastaCimaSelecionados = rootView.findViewById(R.id.pasta_cima_selecionados);
+        pastaCimaSelecionados.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onPastaCimaSelecionadosClicked();
+                }
+            }
+        });
         voltarSelecionados.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,7 +102,6 @@ public class SelecionadosFragment extends Fragment {
                 System.out.println("Botao voltar foi clicado");
             }
         });
-
         return rootView;
     }
 
@@ -74,6 +114,8 @@ public class SelecionadosFragment extends Fragment {
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         adapter = new ImagemAdapter(listaDeExclusao);
         recyclerView.setAdapter(adapter);
+
+        ImageView pastaCimaSelecionados = view.findViewById(R.id.pasta_cima_selecionados);
     }
 
     public void atualizarListaDeExclusao(List<DocumentFile> listaDeExclusao){

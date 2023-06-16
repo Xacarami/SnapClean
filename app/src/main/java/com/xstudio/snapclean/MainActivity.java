@@ -38,7 +38,7 @@ import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SelecionadosFragment.OnFragmentInteractionListener {
 
 
     TextView hello;
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     int tirando = 0;
     int continuando = 0;
     private SelecionadosFragment testeSeJaFoiCriado;
+    Boolean resetouPasta = false;
     private ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
 
     private static final String[] STORAGE_PERMISSIONS = {
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //abrirFragmentSelecionados();
-                if (testeSeJaFoiCriado == null){
+                if (testeSeJaFoiCriado == null) {
                     SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
                     getSupportFragmentManager().beginTransaction()
                             //.replace(R.id.testando, selecionadosFragment)
@@ -168,21 +169,26 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(listaDeExclusao);
         View.OnClickListener selecionarPastaClickListener = v -> {
             System.out.println(pastaJaFoiSelecionada);
-            if(!pastaJaFoiSelecionada){
+
+            if (!pastaJaFoiSelecionada) {
                 selecionarPasta();
                 System.out.println(listaDeExclusao);
             } else {
+                resetouPasta = true;
+                selecionarPasta();
                 System.out.println("Pasta ja selecionada, e clicou em abrir mais uma");
+
             }
 
         };
 
-        botaoSelecionarPasta1.setOnClickListener(selecionarPastaClickListener);
-        botaoSelecionarPasta2.setOnClickListener(selecionarPastaClickListener);
+        pastaCima.setOnClickListener(selecionarPastaClickListener);
+        pastaCentral.setOnClickListener(selecionarPastaClickListener);
 
 
     }
-    public void colocarToast(){
+
+    public void colocarToast() {
         Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
     }
 
@@ -202,6 +208,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        //Verifica se as permissões foram concedidas
+        if (requestCode == REQUEST_STORAGE_PERMISSIONS) {
+            //Verifica as permissões, dentro disso vai o que ta permitido
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                System.out.println("PERMISSÕES GARANTIDAS!!!!!!!!!!!!");
+                //hello.setText("permissoes concedidas");
+            } else {
+                System.out.println("PERMISSÕES NEGADAS");
+                //hello.setText("É necessário que você aceite as permissões");
+            }
+        }
+    }
+
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -215,25 +240,68 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent evento) {
+        if (evento.getAction() == MotionEvent.ACTION_DOWN) {
+            View view = getCurrentFocus();
+            if (view != null && view.getId() != R.id.navigation_drawer) {
+                Rect rect = new Rect();
+                view.getGlobalVisibleRect(rect);
+                if (!rect.contains((int) evento.getRawX(), (int) evento.getRawY())) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                }
+            }
+        }
+        return super.dispatchTouchEvent(evento);
+    }
+
+
+    @Override
+    public void onPastaCimaSelecionadosClicked() {
+        if (!pastaJaFoiSelecionada) {
+            selecionarPasta();
+            System.out.println(listaDeExclusao);
+        } else {
+            resetouPasta = true;
+            selecionarPasta();
+            System.out.println("Pasta ja selecionada, e clicou em abrir mais uma");
+
+        }
+    }
+
+
+    //private ActivityResultLauncher<Intent> folderPickerLauncher;
+    DocumentFile[] arrayDeArquivos;
+
+    public void selecionarPasta() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        //startActivityForResult(intent, REQUEST_CODE_OPEN_FOLDER);
+        arrayDeArquivos = null;
+        selecionarPastaLauncher.launch(intent);
+    }
+
 
     int tamanhoDaLista;
-    DocumentFile[] arrayDeArquivos;
+
     AtomicReference<DocumentFile> arquivoAtual = new AtomicReference<>();
     AtomicInteger resultado = new AtomicInteger(0);
     int voltador = 0;
+
     //int quantidadeApagadas = 0;
     private void exibirImagemPastaSelecionada(Uri pastaSelecionada, int quantidadeDeImagens) {
         if (pastaSelecionada != null) {
             System.out.println("Ta dentro da função exibirImagemPastaSelecionada");
             DocumentFile arquivos = DocumentFile.fromTreeUri(this, pastaSelecionada);
             DocumentFile[] listaDeArquivos = arquivos.listFiles();
+
             arrayDeArquivos = listaDeArquivos;
             tamanhoDaLista = listaDeArquivos.length;
 
             //Ordena a listaDeArquivos do último modificado ao primeiro (pastas ficam no fim)
             Arrays.sort(listaDeArquivos, new Comparator<DocumentFile>() {
                 @Override
-                public int compare(DocumentFile file1, DocumentFile file2){
+                public int compare(DocumentFile file1, DocumentFile file2) {
                     return Long.compare(file2.lastModified(), file1.lastModified());
                 }
             });
@@ -254,26 +322,26 @@ public class MainActivity extends AppCompatActivity {
 
 
             View.OnClickListener onClickListener = v -> {
-                if (v.getId() == R.id.negar_imagem){
+                if (v.getId() == R.id.negar_imagem) {
                     listaDeExclusao.add(0, arquivoAtual.get());
                     //quantidadeApagadas++;
                     numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
 
                     System.out.println("Clicou no botao de excluir");
                     System.out.println(listaDeExclusao);
-                } else if (v.getId() == R.id.voltar_imagem){
-                    int indexImagemAnterior = imagensCarregadas -2;
-                    if (indexImagemAnterior >= 0){
+                } else if (v.getId() == R.id.voltar_imagem) {
+                    int indexImagemAnterior = imagensCarregadas - 2;
+                    if (indexImagemAnterior >= 0) {
                         DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];
-                        if (listaDeExclusao.contains(imagemAnterior)){
+                        if (listaDeExclusao.contains(imagemAnterior)) {
                             listaDeExclusao.remove(imagemAnterior);
                             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                         }
                     }
-                    if (imagensCarregadas > 1){
+                    if (imagensCarregadas > 1) {
                         resultado.set(-2);
                         voltador = -2;
-                    } else if (imagensCarregadas <= 1){
+                    } else if (imagensCarregadas <= 1) {
                         resultado.set(-1);
                         voltador = -1;
                     }
@@ -286,17 +354,25 @@ public class MainActivity extends AppCompatActivity {
             botaoExcluir.setOnClickListener(onClickListener);
             botaoVoltar.setOnClickListener(onClickListener);
 
-            if (arquivos != null && arquivos.length() > 0){
+            if (arquivos != null && arquivos.length() > 0) {
                 layoutPastaCentral.setVisibility(View.GONE);
                 continuarLoop(quantidadeDeImagens, voltador);
             }
         }
     }
 
-    private void continuarLoop(int quantidadeDeImagens, int ajuste){
-        for (int i = imagensCarregadas + voltador; i < imagensCarregadas + quantidadeDeImagens && i < tamanhoDaLista; i++){
+
+    private void continuarLoop(int quantidadeDeImagens, int ajuste) {
+
+        if (resetouPasta){
+            imagensCarregadas = 0;
+            System.out.println("testar if");
+        }
+
+        for (int i = imagensCarregadas + voltador; i < imagensCarregadas + quantidadeDeImagens && i < tamanhoDaLista; i++) {
             //for (DocumentFile arquivo : listaDeArquivos) {
 
+            resetouPasta = false;
             System.out.println("i = " + i);
             System.out.println("Voltador = " + voltador);
 
@@ -306,8 +382,8 @@ public class MainActivity extends AppCompatActivity {
 
             String extensao = arquivo.getType();
 
-            if (arquivo.getType() != null){
-                if (isImagem(extensao)){
+            if (arquivo.getType() != null) {
+                if (isImagem(extensao)) {
                     imageView.setVisibility(View.VISIBLE);
                     videoView.setVisibility(View.GONE);
 
@@ -322,13 +398,13 @@ public class MainActivity extends AppCompatActivity {
                     videoView.setVideoPath(caminhoArquivo);
                     videoView.start();
 
-                } else if (isAudio(extensao)){
+                } else if (isAudio(extensao)) {
                     System.out.println("um audio ai");
                 } else {
                     System.out.println("---------------------");
                     System.out.println("Aquivo de extensão desconhecida");
-                    System.out.println("Tipo: "+arquivo.getType());
-                    System.out.println("Nome: "+arquivo.getName());
+                    System.out.println("Tipo: " + arquivo.getType());
+                    System.out.println("Nome: " + arquivo.getName());
                     System.out.println("---------------------");
                     continue;
                 }
@@ -346,102 +422,24 @@ public class MainActivity extends AppCompatActivity {
             imagensCarregadas += quantidadeDeImagens;
         } else {
             imagensCarregadas += ajuste;
-            if (imagensCarregadas < 0){
+            if (imagensCarregadas < 0) {
                 imagensCarregadas = 0;
 
             }
         }
+
     }
 
-    private boolean isImagem(String extensao){
+    private boolean isImagem(String extensao) {
         return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg");
     }
 
-    private boolean isVideo(String extensao){
+    private boolean isVideo(String extensao) {
         return extensao.endsWith("mp4") || extensao.endsWith("3gp") || extensao.equalsIgnoreCase(".wmv");
     }
 
-    private boolean isAudio(String extensao){
+    private boolean isAudio(String extensao) {
         return extensao.endsWith("wav") || extensao.endsWith("mp3");
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent evento) {
-        if (evento.getAction() == MotionEvent.ACTION_DOWN) {
-            View view = getCurrentFocus();
-            if (view != null && view.getId() != R.id.navigation_drawer) {
-                Rect rect = new Rect();
-                view.getGlobalVisibleRect(rect);
-                if (!rect.contains((int) evento.getRawX(), (int) evento.getRawY())) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                }
-            }
-        }
-        return super.dispatchTouchEvent(evento);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        //Verifica se as permissões foram concedidas
-        if (requestCode == REQUEST_STORAGE_PERMISSIONS){
-            //Verifica as permissões, dentro disso vai o que ta permitido
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                System.out.println("PERMISSÕES GARANTIDAS!!!!!!!!!!!!");
-                //hello.setText("permissoes concedidas");
-            } else {
-                System.out.println("PERMISSÕES NEGADAS");
-                //hello.setText("É necessário que você aceite as permissões");
-            }
-        }
-    }
-
-    /*
-    private void abrirFragmentSelecionados(){
-        //ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.container_selecionados, new SelecionadosFragment(listaDeExclusao));
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-        ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
-        layoutPrincipal.setVisibility(View.GONE);
-    }
-    */
-
-
-    //private ActivityResultLauncher<Intent> folderPickerLauncher;
-
-    public void selecionarPasta(){
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        //startActivityForResult(intent, REQUEST_CODE_OPEN_FOLDER);
-        selecionarPastaLauncher.launch(intent);
-    }
-
-    /*
-    public void testeInfo(View view){
-        //textoTeste = findViewById(R.id.textoTesteIcone);
-        textoTeste.setText("Apertou icone info - Testa caminho da pasta");
-
-    }
-
-     */
-
-    public void testeHamburger(View view){
-        //textoTeste = findViewById(R.id.textoTesteIcone);
-        //textoTeste.setText("Apertou icone hamburger");
-    }
-
-
-    /*
-    public void testeVerImagens(View view){
-        //textoTeste = findViewById(R.id.textoTesteIcone);
-        textoTeste.setText("Apertou icone Ver Imagens");
-
-    }
-
-     */
 }
