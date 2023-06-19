@@ -32,7 +32,7 @@
         tools:context=".MainActivity">
 
         <ImageButton
-            android:id="@+id/imageButton2"
+            android:id="@+id/selecionador"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/background_circle"
@@ -68,7 +68,7 @@
             android:scaleX="0.6"
             android:scaleY="0.6"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/imageButton2"
+            app:layout_constraintEnd_toStartOf="@+id/selecionador"
             app:layout_constraintStart_toEndOf="@+id/voltar_selecionados"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@mipmap/ic_pasta"
@@ -156,6 +156,12 @@
                 android:layout_marginEnd="12dp" />
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/imagem_tela_inteira"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

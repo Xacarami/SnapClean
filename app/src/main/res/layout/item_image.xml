@@ -1,9 +1,33 @@
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/imagem"
-    android:layout_width="110dp"
-    android:layout_height="110dp"
-    android:layout_marginStart="4dp"
-    android:layout_marginEnd="4dp"
-    android:layout_marginBottom="12dp"
-    android:scaleType="centerCrop" />
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    >
 
+    <ImageView
+        android:id="@+id/imagem"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:scaleType="centerCrop"
+        />
+
+    <ImageView
+        android:id="@+id/icone_selecao"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="top|end"
+        android:src="@mipmap/ic_selecionado_azul"
+        android:visibility="gone"
+        />
+
+    <ImageView
+        android:id="@+id/aumentar_imagem"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_gravity="bottom|start"
+        android:src="@mipmap/ic_aumentar_imagem"
+        android:visibility="visible"
+        app:tint="#3A3A3A" />
+
+</FrameLayout>

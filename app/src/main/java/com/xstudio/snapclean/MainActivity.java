@@ -19,12 +19,21 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.media.Image;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.MediaController;
+import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -32,6 +41,7 @@ import android.widget.VideoView;
 import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -41,8 +51,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MainActivity extends AppCompatActivity implements SelecionadosFragment.OnFragmentInteractionListener {
 
 
-    TextView hello;
-    TextView textoTeste;
+    //TextView hello;
+    //TextView textoTeste;
     private DrawerLayout drawerLayout;
     private static final int REQUEST_STORAGE_PERMISSIONS = 1;
 
@@ -63,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     private SelecionadosFragment testeSeJaFoiCriado;
     Boolean resetouPasta = false;
     private ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
+    FrameLayout layoutImagens;
+    ConstraintLayout layoutPrincipal;
 
     private static final String[] STORAGE_PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -74,9 +86,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        hello = findViewById(R.id.hello);
-
+        //hello = findViewById(R.id.hello);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
@@ -99,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             @Override
             public void onClick(View view) {
                 //textoTeste = findViewById(R.id.textoTesteIcone);
-                textoTeste.setText("Apertou icone hamburger");
+                //textoTeste.setText("Apertou icone hamburger");
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else {
@@ -122,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 } else {
                     testeSeJaFoiCriado.atualizarListaDeExclusao(listaDeExclusao);
                 }
-                ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
+                layoutPrincipal = findViewById(R.id.layout_principal);
                 layoutPrincipal.setVisibility(View.GONE);
             }
         });
@@ -235,6 +245,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         //String pastaUri = .getPath();
                         //pastaSelecionada = getFolderPathFromUri(data.getData());
                         pastaSelecionada = data.getData();
+                        layoutImagens = findViewById(R.id.layout_imagens);
+                        layoutImagens.setVisibility(View.VISIBLE);
                         exibirImagemPastaSelecionada(data.getData(), 1);
                     }
                 }
@@ -395,11 +407,67 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     imageView.setVisibility(View.GONE);
                     videoView.setVisibility(View.VISIBLE);
 
+                    MediaController mediaController = new MediaController(this);
+                    mediaController.setAnchorView(videoView);
+                    videoView.setMediaController(mediaController);
+
                     videoView.setVideoPath(caminhoArquivo);
-                    videoView.start();
+
+                    Switch autoplaySwitch = findViewById(R.id.switchAutoPlay);
+
+                    if (autoplaySwitch.isChecked()) {
+                        videoView.start();
+                    } else {
+                        videoView.pause();
+                    }
 
                 } else if (isAudio(extensao)) {
                     System.out.println("um audio ai");
+
+                    try {
+                        MediaPlayer mediaPlayer = new MediaPlayer();
+                        mediaPlayer.setDataSource(caminhoArquivo);
+                        mediaPlayer.prepare();
+
+                        ImageButton playButton = findViewById(R.id.play_button);
+                        playButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mediaPlayer.start();
+                                System.out.println("Start audio");
+                            }
+                        });
+
+                        ImageButton pauseButton = findViewById(R.id.pause_button);
+                        pauseButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mediaPlayer.pause();
+                                System.out.println("Pause audio");
+                            }
+                        });
+
+                        SeekBar seekBar = findViewById(R.id.seek_bar);
+                        seekBar.setMax(mediaPlayer.getDuration());
+                        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                            @Override
+                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                if (fromUser) {
+                                    mediaPlayer.seekTo(progress);
+                                }
+                            }
+
+                            @Override
+                            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+                            @Override
+                            public void onStopTrackingTouch(SeekBar seekBar) {}
+                        });
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 } else {
                     System.out.println("---------------------");
                     System.out.println("Aquivo de extensão desconhecida");
@@ -424,8 +492,21 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             imagensCarregadas += ajuste;
             if (imagensCarregadas < 0) {
                 imagensCarregadas = 0;
-
             }
+        }
+
+
+        // Verifica se é a última imagem da pasta
+        if (imagensCarregadas > tamanhoDaLista) {
+            // Exibe uma mensagem ao usuário
+            Toast.makeText(this, "A pasta terminou! Sua lista de excluídos ainda está lá. Você pode procurar outra pasta.", Toast.LENGTH_SHORT).show();
+            // Atualiza a visibilidade dos layouts
+            layoutPastaCentral.setVisibility(View.VISIBLE);
+            //layoutPrincipal.setVisibility(View.VISIBLE);
+            layoutImagens = findViewById(R.id.layout_imagens);
+            layoutImagens.setVisibility(View.GONE);
+            videoView.pause();
+
         }
 
     }
@@ -439,7 +520,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private boolean isAudio(String extensao) {
-        return extensao.endsWith("wav") || extensao.endsWith("mp3");
+        return extensao.endsWith("wav") || extensao.endsWith("mp3") || extensao.endsWith("m4a");
     }
 
 }

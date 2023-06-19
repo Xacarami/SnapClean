@@ -19,16 +19,20 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.MainActivity;
 import com.xstudio.snapclean.R;
 
 import java.util.List;
 
-public class SelecionadosFragment extends Fragment {
+public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnItemClickListener {
 
     //public SelecionadosFragment(){}
 
     private List<DocumentFile> listaDeExclusao;
+
+    private boolean todasSelecionadas = false;
+
 
     public SelecionadosFragment(List<DocumentFile> listaDeExclusao){
         this.listaDeExclusao = listaDeExclusao;
@@ -36,10 +40,23 @@ public class SelecionadosFragment extends Fragment {
 
     private SelecionadosViewModel viewModel;
 
+
+
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(SelecionadosViewModel.class);
+    }
+
+    private ImageView imagemTelaInteira;
+
+    @Override
+    public void onImagemClicked(DocumentFile imagem) {
+        String caminhoArquivo = imagem.getUri().toString();
+        Glide.with(this)
+                .load(caminhoArquivo)
+                .into(imagemTelaInteira);
+        imagemTelaInteira.setVisibility(View.VISIBLE);
     }
 
 
@@ -68,7 +85,37 @@ public class SelecionadosFragment extends Fragment {
     }
 
 
+    private ImagemAdapter adapter;
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
+        super.onViewCreated(view, savedInstanceState);
 
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        adapter = new ImagemAdapter(listaDeExclusao, this);
+        recyclerView.setAdapter(adapter);
+
+        ImageView pastaCimaSelecionados = view.findViewById(R.id.pasta_cima_selecionados);
+
+        imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
+
+        adapter = new ImagemAdapter(listaDeExclusao, this);
+        recyclerView.setAdapter(adapter);
+
+        ImageButton selecionador = view.findViewById(R.id.selecionador);
+        selecionador.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (todasSelecionadas) {
+                    adapter.desselecionarTodas();
+                    todasSelecionadas = false;
+                } else {
+                    adapter.selecionarTodas();
+                    todasSelecionadas = true;
+                }
+            }
+        });
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -87,6 +134,9 @@ public class SelecionadosFragment extends Fragment {
                 }
             }
         });
+
+
+
         voltarSelecionados.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -105,21 +155,9 @@ public class SelecionadosFragment extends Fragment {
         return rootView;
     }
 
-    private ImagemAdapter adapter;
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
-        super.onViewCreated(view, savedInstanceState);
-
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        adapter = new ImagemAdapter(listaDeExclusao);
-        recyclerView.setAdapter(adapter);
-
-        ImageView pastaCimaSelecionados = view.findViewById(R.id.pasta_cima_selecionados);
-    }
-
     public void atualizarListaDeExclusao(List<DocumentFile> listaDeExclusao){
         this.listaDeExclusao = listaDeExclusao;
         adapter.notifyDataSetChanged();
     }
+
 }
