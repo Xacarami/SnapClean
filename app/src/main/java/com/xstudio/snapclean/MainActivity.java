@@ -23,6 +23,7 @@ import android.media.Image;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -41,6 +42,7 @@ import android.widget.VideoView;
 import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
 
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -245,6 +247,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         //String pastaUri = .getPath();
                         //pastaSelecionada = getFolderPathFromUri(data.getData());
                         pastaSelecionada = data.getData();
+
+                        getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                        // Continuar com o processamento da pasta selecionada
                         layoutImagens = findViewById(R.id.layout_imagens);
                         layoutImagens.setVisibility(View.VISIBLE);
                         exibirImagemPastaSelecionada(data.getData(), 1);
@@ -373,6 +379,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
+    ImageButton playButton;
+    ImageButton pauseButton;
+    SeekBar seekBar;
 
     private void continuarLoop(int quantidadeDeImagens, int ajuste) {
 
@@ -425,48 +434,69 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     System.out.println("um audio ai");
 
                     try {
-                        MediaPlayer mediaPlayer = new MediaPlayer();
-                        mediaPlayer.setDataSource(caminhoArquivo);
-                        mediaPlayer.prepare();
+                        ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(arquivo.getUri(), "r");
+                        if (parcelFileDescriptor != null) {
+                            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
 
-                        ImageButton playButton = findViewById(R.id.play_button);
-                        playButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                mediaPlayer.start();
-                                System.out.println("Start audio");
-                            }
-                        });
+                            MediaPlayer mediaPlayer = new MediaPlayer();
+                            mediaPlayer.setDataSource(fileDescriptor);
+                            mediaPlayer.prepare();
 
-                        ImageButton pauseButton = findViewById(R.id.pause_button);
-                        pauseButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                mediaPlayer.pause();
-                                System.out.println("Pause audio");
-                            }
-                        });
-
-                        SeekBar seekBar = findViewById(R.id.seek_bar);
-                        seekBar.setMax(mediaPlayer.getDuration());
-                        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                            @Override
-                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                if (fromUser) {
-                                    mediaPlayer.seekTo(progress);
+                            playButton = findViewById(R.id.play_button);
+                            playButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mediaPlayer.start();
+                                    System.out.println("Start audio");
                                 }
-                            }
+                            });
 
-                            @Override
-                            public void onStartTrackingTouch(SeekBar seekBar) {}
+                            pauseButton = findViewById(R.id.pause_button);
+                            pauseButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mediaPlayer.pause();
+                                    System.out.println("Pause audio");
+                                }
+                            });
 
-                            @Override
-                            public void onStopTrackingTouch(SeekBar seekBar) {}
-                        });
+                            seekBar = findViewById(R.id.seek_bar);
+                            seekBar.setMax(mediaPlayer.getDuration());
+                            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                                @Override
+                                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                    if (fromUser) {
+                                        mediaPlayer.seekTo(progress);
+                                    }
+                                }
+
+                                @Override
+                                public void onStartTrackingTouch(SeekBar seekBar) {
+                                }
+
+                                @Override
+                                public void onStopTrackingTouch(SeekBar seekBar) {
+                                }
+                            });
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    /*
+                    try {
+
 
                     } catch (IOException e) {
+                        System.out.println("--------ERRO AQUI ---------------");
+                        System.out.println("--------ERRO AQUI ---------------");
+                        System.out.println("--------ERRO AQUI ---------------");
+                        System.out.println("--------ERRO AQUI ---------------");
+                        System.out.println("--------ERRO AQUI ---------------");
                         e.printStackTrace();
                     }
+
+                     */
 
                 } else {
                     System.out.println("---------------------");
@@ -520,7 +550,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private boolean isAudio(String extensao) {
-        return extensao.endsWith("wav") || extensao.endsWith("mp3") || extensao.endsWith("m4a");
+        return extensao.endsWith("wav") || extensao.endsWith("audio/mpeg") || extensao.endsWith("mp3") || extensao.endsWith("m4a");
     }
 
 }
