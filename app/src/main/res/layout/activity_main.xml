@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
+    android:visibility="visible"
     android:layout_height="match_parent">
 
 
@@ -13,6 +14,7 @@
         android:id="@+id/layout_principal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="visible"
         tools:context=".MainActivity">
 
         <FrameLayout
@@ -26,45 +28,122 @@
             <ImageView
                 android:id="@+id/view_imagem"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <VideoView
                 android:id="@+id/view_video"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraint_audio"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:visibility="gone">
 
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="137dp"
+                    android:layout_height="137dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@mipmap/ic_musica" />
 
                 <ImageButton
                     android:id="@+id/pause_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/background_circle"
+                    android:paddingLeft="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingBottom="8dp"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar"
                     app:srcCompat="@android:drawable/ic_media_pause" />
 
                 <ImageButton
                     android:id="@+id/play_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="27dp"
-                    android:layout_marginTop="28dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/background_circle"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingBottom="8dp"
+                    android:visibility="visible"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar"
                     app:srcCompat="@android:drawable/ic_media_play" />
 
                 <SeekBar
                     android:id="@+id/seek_bar"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="80dp"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginTop="75dp"
+                    android:layout_marginEnd="30dp"
+                    android:progressBackgroundTint="#2549FF"
+                    android:thumbTint="#9FBEFB"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/imageView" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraint_extensao_desconhecida"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/texto_aviso"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="75dp"
+                    android:text="Extensão não suportada"
+                    android:textAlignment="center"
+                    android:textColor="#FFECCB"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/alerta_icone" />
+
+                <TextView
+                    android:id="@+id/texto_nome_arquivo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Nome do arquivo"
+                    android:textAlignment="center"
+                    android:textColor="#FFECCB"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/texto_aviso" />
+
+                <ImageView
+                    android:id="@+id/alerta_icone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scaleX="2.5"
+                    android:scaleY="2.5"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@mipmap/ic_alerta"
+                    app:tint="#FAC400" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </FrameLayout>
@@ -307,32 +386,72 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
+    <!-- Essa view é para não permitir que os ícones abaixo sejam clicáveis -->
+    <View
+        android:id="@+id/transparent_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF0101"
+        android:visibility="gone" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/navigation_drawer"
         android:layout_width="320dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#B5001949"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Button"
-            android:translationY="150dp"
-            tools:layout_editor_absoluteX="1dp"
-            tools:layout_editor_absoluteY="286dp" />
+        android:background="#6512316E"
+        android:orientation="vertical"
+        android:visibility="visible">
 
         <Switch
             android:id="@+id/switchAutoPlay"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Switch"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="20dp"
             android:checked="true"
-            />
+            android:text="Play Automático"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:translationY="70dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="App recém lançado - novas funcionalidades estão por vir"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="28dp"
+            android:text="Copyright © 2023 X Studio. Todos os direitos reservados."
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.drawerlayout.widget.DrawerLayout>
 
