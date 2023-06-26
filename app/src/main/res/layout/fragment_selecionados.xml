@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout1"
+        android:id="@+id/constraint_icones_cima"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginStart="14dp"

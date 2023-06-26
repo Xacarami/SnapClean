@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.media.Image;
 import android.media.MediaPlayer;
@@ -32,7 +33,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -90,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     private ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
     FrameLayout layoutImagens;
     ConstraintLayout layoutPrincipal;
+    ConstraintLayout constraintIconesCima;
+    ConstraintLayout constraintIconesBaixo;
 
     SharedPreferences sharedPreferences;
 
@@ -278,20 +283,29 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
 
         layoutImagens = findViewById(R.id.layout_imagens);
+
+        final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            private float scaleFactor = 1f;
+
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                scaleFactor *= detector.getScaleFactor();
+                scaleFactor = Math.max(0.1f, Math.min(scaleFactor, 5.0f));
+                layoutImagens.animate().scaleX(scaleFactor).scaleY(scaleFactor).setDuration(0).start();
+                return true;
+            }
+        });
+
         layoutImagens.setOnTouchListener(new View.OnTouchListener() {
             private ObjectAnimator animator;
             private boolean isAnimating = false;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                scaleDetector.onTouchEvent(event);
+
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_MOVE:
-                        /*
-                        if (isAnimating) {
-                            animator.cancel();
-                            isAnimating = false;
-                        }
-                         */
                         if (animator != null && animator.isRunning()) {
                             animator.cancel();
                         }
@@ -309,57 +323,22 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             if (x2 > x1) {
                                 // Deslizou da esquerda para a direita
                                 animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", layoutImagens.getWidth());
-
                             } else {
                                 // Deslizou da direita para a esquerda - Excluir arquivo
                                 animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", -layoutImagens.getWidth());
-                                boolean arquivoJaExcluido = false;
-                                for (DocumentFile arquivoExcluido : listaDeExclusao) {
-                                    if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
-                                        arquivoJaExcluido = true;
-                                        System.out.println("Já tem");
-                                        System.out.println(arquivoExcluido.getUri());
-                                        break;
-                                    }
-                                }
-                                if (!arquivoJaExcluido) {
-                                    listaDeExclusao.add(0, arquivoAtual.get());
-                                    numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-                                    System.out.println(arquivoAtual.get().getUri());
-                                }
-
-                                System.out.println("Clicou no botao de excluir");
-                                System.out.println(listaDeExclusao);
-                                /*
-                                listaDeExclusao.add(0, arquivoAtual.get());
-                                //quantidadeApagadas++;
-                                numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-
-                                System.out.println("Clicou no botao de excluir");
-                                System.out.println(listaDeExclusao);
-                                //continuarLoop(quantidadeDeImagens + voltador, resultado.get());
-                                //continuarLoop(1 + voltador, resultado.get());
-
-                                 */
+                                excluindoArquivo();
                             }
                             animator.setDuration(200);
                             animator.addListener(new AnimatorListenerAdapter() {
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
                                     isAnimating = false;
-                                    // Aqui você pode adicionar o código para mostrar a próxima imagem
-                                    /*
-                                    animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", 0);
-                                    animator.setDuration(0);
-                                    animator.start();
-                                     */
                                     layoutImagens.setTranslationX(0);
                                     continuarLoop(1 + voltador, resultado.get());
                                 }
                             });
                             animator.start();
                             isAnimating = true;
-
                         } else {
                             // Deslizou menos que MIN_DISTANCE, então volta para o centro
                             animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", 0);
@@ -370,11 +349,71 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         break;
                 }
                 v.performClick();
+
+                // Aqui você pode adicionar o código para detectar o pressionamento longo
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // Inicia o pressionamento longo
+                    v.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // Aqui você pode adicionar o código para tornar os ícones mais transparentes
+                            System.out.println("Segurando o dedo no layout");
+                            constraintIconesCima = findViewById(R.id.constraint_icones_cima);
+                            constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+                            float alphaIcone = 0.02f;
+
+                            animator = ObjectAnimator.ofFloat(constraintIconesCima, "alpha", alphaIcone);
+                            animator.setDuration(200);
+                            animator.start();
+                            animator = ObjectAnimator.ofFloat(constraintIconesBaixo, "alpha", alphaIcone);
+                            animator.setDuration(200);
+                            animator.start();
+
+                            //constraintIconesCima.setAlpha(alphaIcone);
+                            //constraintIconesBaixo.setAlpha(alphaIcone);
+                        }
+                    }, ViewConfiguration.getLongPressTimeout());
+                } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    // Cancela o pressionamento longo
+
+                    animator = ObjectAnimator.ofFloat(constraintIconesCima, "alpha", 1);
+                    animator.setDuration(200);
+                    animator.start();
+                    animator = ObjectAnimator.ofFloat(constraintIconesBaixo, "alpha", 1);
+                    animator.setDuration(200);
+                    animator.start();
+
+                    //constraintIconesCima.setAlpha(1);
+                    //constraintIconesBaixo.setAlpha(1);
+                    v.removeCallbacks(null);
+                }
+
                 return true;
             }
         });
 
+    }
 
+
+
+    public void excluindoArquivo() {
+        boolean arquivoJaExcluido = false;
+        for (DocumentFile arquivoExcluido : listaDeExclusao) {
+            if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
+                arquivoJaExcluido = true;
+                System.out.println("Já tem");
+                System.out.println(arquivoExcluido.getUri());
+                break;
+            }
+        }
+        if (!arquivoJaExcluido) {
+            listaDeExclusao.add(0, arquivoAtual.get());
+            numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
+            System.out.println(arquivoAtual.get().getUri());
+        }
+
+        System.out.println("Clicou no botao de excluir");
+        System.out.println(listaDeExclusao);
     }
 
 
@@ -522,41 +561,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
             View.OnClickListener onClickListener = v -> {
                 if (v.getId() == R.id.negar_imagem) {
-                    boolean arquivoJaExcluido = false;
-                    for (DocumentFile arquivoExcluido : listaDeExclusao) {
-                        if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
-                            arquivoJaExcluido = true;
-                            System.out.println("Já tem");
-                            break;
-                        }
-                    }
-                    if (!arquivoJaExcluido) {
-                        listaDeExclusao.add(0, arquivoAtual.get());
-                        numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-                        System.out.println(arquivoAtual.get().getUri());
-                    }
-
-                    System.out.println("Clicou no botao de excluir");
-                    System.out.println(listaDeExclusao);
+                    excluindoArquivo();
 
                 } else if (v.getId() == R.id.voltar_imagem) {
-                    /*
-                    int indexImagemAnterior = imagensCarregadas - 2;
-                    if (indexImagemAnterior >= 0) {
-                        DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];
-                        for (DocumentFile arquivoExcluido : listaDeExclusao){
-                            System.out.println("arquivoExcluido -> "+arquivoExcluido.getUri());
-                            System.out.println("imagemAnterior -> " + imagemAnterior.getUri());
-                            //if (listaDeExclusao.contains(imagemAnterior)) {
-                            if (arquivoExcluido.getUri().equals(imagemAnterior.getUri())){
-                                listaDeExclusao.remove(imagemAnterior);
-                                numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-                                System.out.println("foi removida?");
-                            }
-                        }
-
-                     */
-
                     int indexImagemAnterior = imagensCarregadas - 2;
                     if (indexImagemAnterior >= 0) {
                         DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];

@@ -24,8 +24,8 @@
             android:visibility="visible"
             android:clickable="true"
             android:focusable="true"
-            app:layout_constraintBottom_toTopOf="@id/constraintLayout"
-            app:layout_constraintTop_toBottomOf="@id/constraintLayout1">
+            app:layout_constraintBottom_toTopOf="@id/constraint_icones_baixo"
+            app:layout_constraintTop_toBottomOf="@id/constraint_icones_cima">
 
             <ImageView
                 android:id="@+id/view_imagem"
@@ -161,12 +161,12 @@
             android:layout_marginBottom="24dp"
             android:text="@string/app_name"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+            app:layout_constraintBottom_toTopOf="@+id/constraint_icones_baixo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout1"
+            android:id="@+id/constraint_icones_cima"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_marginStart="14dp"
@@ -248,7 +248,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout"
+            android:id="@+id/constraint_icones_baixo"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="14dp"
