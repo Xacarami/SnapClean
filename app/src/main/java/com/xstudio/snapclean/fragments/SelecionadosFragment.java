@@ -95,7 +95,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         adapter = new ImagemAdapter(listaDeExclusao, this);
         recyclerView.setAdapter(adapter);
 
-        ImageView pastaCimaSelecionados = view.findViewById(R.id.pasta_cima_selecionados);
+        //ImageView pastaCimaSelecionados = view.findViewById(R.id.pasta_cima_selecionados);
 
         imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
 
@@ -125,6 +125,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
         ConstraintLayout layoutPrincipal = getActivity().findViewById(R.id.layout_principal);
         ImageButton voltarSelecionados = rootView.findViewById(R.id.voltar_selecionados);
+        /*
         ImageView pastaCimaSelecionados = rootView.findViewById(R.id.pasta_cima_selecionados);
         pastaCimaSelecionados.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +135,8 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 }
             }
         });
+
+         */
 
 
 

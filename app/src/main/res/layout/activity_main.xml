@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:visibility="visible"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:visibility="visible">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,9 +20,9 @@
             android:id="@+id/layout_imagens"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:visibility="visible"
             android:clickable="true"
             android:focusable="true"
+            android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@id/constraint_icones_baixo"
             app:layout_constraintTop_toBottomOf="@id/constraint_icones_cima">
 
@@ -160,7 +159,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:text="@string/app_name"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@+id/constraint_icones_baixo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -254,6 +253,7 @@
             android:layout_marginStart="14dp"
             android:layout_marginEnd="14dp"
             android:layout_marginBottom="20dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -315,7 +315,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageButton
-            android:id="@+id/imageButton6"
+            android:id="@+id/zoom_out"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="16dp"
@@ -330,7 +330,7 @@
             app:tint="#FFFFFF" />
 
         <ImageButton
-            android:id="@+id/imageButton8"
+            android:id="@+id/zoom_in"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="16dp"
@@ -339,15 +339,34 @@
             android:scaleX="0.8"
             android:scaleY="0.8"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/imageButton6"
+            app:layout_constraintBottom_toTopOf="@+id/zoom_out"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@mipmap/ic_zoom_in_2"
             app:tint="#FFFFFF" />
 
+        <Button
+            android:id="@+id/restaurar_tamanho"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="#83434343"
+            android:insetTop="5dp"
+            android:insetBottom="5dp"
+            android:paddingLeft="4dp"
+            android:paddingTop="2dp"
+            android:paddingRight="4dp"
+            android:text="Restaurar tamanho padrão"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/layout_imagens"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout_PastaCentral"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:layout_constraintBottom_toBottomOf="@+id/hello"
             app:layout_constraintEnd_toEndOf="parent"
@@ -437,7 +456,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="28dp"
-            android:text="Copyright © 2023 X Studio. Todos os direitos reservados."
+            android:text="Copyright © 2023 XStudio Dev. Todos os direitos reservados."
             android:textAlignment="center"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
