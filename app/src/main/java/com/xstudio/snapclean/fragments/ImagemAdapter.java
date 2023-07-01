@@ -55,13 +55,34 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     }
 
 
+    private boolean isImagem(String extensao) {
+        return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg");
+    }
+
+    private boolean isVideo(String extensao) {
+        return extensao.endsWith("mp4") || extensao.endsWith("3gp") || extensao.equalsIgnoreCase(".wmv");
+    }
+
+    private boolean isAudio(String extensao) {
+        return extensao.endsWith("wav") || extensao.endsWith("mp3") || extensao.endsWith("m4a") || extensao.endsWith("wma");
+    }
+
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DocumentFile imagem = listaDeExclusao.get(position);
         String caminhoArquivo = imagem.getUri().toString();
-        Glide.with(holder.imageView.getContext())
-                .load(caminhoArquivo)
-                .into(holder.imageView);
+        String extensao = imagem.getName();
+        if(isVideo(extensao) || isImagem(extensao)){
+            Glide.with(holder.imageView.getContext())
+                    .load(caminhoArquivo)
+                    .into(holder.imageView);
+        } else if(isAudio(extensao)){
+            Glide.with(holder.imageView.getContext())
+                    .load(R.mipmap.ic_musica)
+                    .into(holder.imageView);
+        }
+
 
         // Adiciona um ouvinte de clique à imagem
         holder.itemView.setOnClickListener(new View.OnClickListener() {

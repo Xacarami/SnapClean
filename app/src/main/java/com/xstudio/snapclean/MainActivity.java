@@ -10,8 +10,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 
@@ -25,9 +23,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.media.Image;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -35,7 +31,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Button;
@@ -43,7 +38,6 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -54,14 +48,14 @@ import android.widget.VideoView;
 import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
 
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -107,10 +101,15 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     ConstraintLayout constraintIconesBaixo;
 
     SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "MyPrefsFile";
+    private static final String PREF_EXCLUSION_LIST = "exclusion_list";
+
+    private SharedPreferences settings;
     private boolean acessoNaPasta = false;
     private boolean isZooming;
+    private boolean permitirArrasto = true;
 
-    float x1,x2;
+    float x1, x2;
     float y1;
     float MIN_DISTANCE = 150;
     float alphaIcone = 0.05f;
@@ -167,44 +166,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         ImageView pastaCima = findViewById(R.id.pasta_cima);
         ImageView pastaCentral = findViewById(R.id.pasta_central);
 
-        /*
-        pastaCima.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                System.out.println("Acesso na pasta está true?? -> " + acessoNaPasta);
-                if (acessoNaPasta){
-                    System.out.println("Acesso na pasta está true?? -> " + acessoNaPasta);
-                    selecionarPasta();
-                } else {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        Toast.makeText(MainActivity.this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_LONG).show();
-                        hello.setText("Dentro do if");
-                    } else {
-                        ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
-                        hello.setText("Dentro do else");
-                    }
-                }
-            }
-        });
-
-        pastaCentral.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selecionarPasta();
-            }
-        });
-
-         */
-
         ImageButton optionIcon = findViewById(R.id.opcoes);
         layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
 
         optionIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //textoTeste = findViewById(R.id.textoTesteIcone);
-                //textoTeste.setText("Apertou icone hamburger");
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else {
@@ -246,11 +213,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         icLixeira1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //abrirFragmentSelecionados();
                 if (testeSeJaFoiCriado == null) {
                     SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
                     getSupportFragmentManager().beginTransaction()
-                            //.replace(R.id.testando, selecionadosFragment)
                             .replace(R.id.container_selecionados, selecionadosFragment)
                             .commit();
                 } else {
@@ -282,14 +247,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
 
         //Selecionador de pastas
-        //ImageButton botaoSelecionarPasta1 = findViewById(R.id.pasta_cima);
-        //ImageButton botaoSelecionarPasta2 = findViewById(R.id.pasta_central);
-
         View.OnClickListener selecionarPastaClickListener = v -> {
             System.out.println(pastaJaFoiSelecionada);
 
             if (!pastaJaFoiSelecionada) {
-                if(acessoNaPasta){
+                if (acessoNaPasta) {
                     selecionarPasta();
                 } else {
                     showPermissionExplanationDialog();
@@ -328,26 +290,31 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         zoomIn.setOnClickListener(new View.OnClickListener() {
             private ObjectAnimator animator;
+
             @Override
             public void onClick(View v) {
-                if (layoutImagens.getScaleX() <= 8){
+                if (layoutImagens.getScaleX() <= 8) {
 
                     layoutImagens.setScaleX(layoutImagens.getScaleX() * 2f);
                     layoutImagens.setScaleY(layoutImagens.getScaleY() * 2f);
-                    if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1){
+                    if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
                         isZooming = true;
+                        permitirArrasto = true;
                         restaurarTamanho.setVisibility(View.VISIBLE);
                         esconderIcones();
 
-                    } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1){
+                    } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1) {
                         restaurarTamanho.setVisibility(View.GONE);
                         layoutImagens.setTranslationX(0);
                         layoutImagens.setTranslationY(0);
                         isZooming = false;
+                        permitirArrasto = true;
                         voltarIconesAparecer();
 
                     } else {
-                        isZooming = false;
+                        isZooming = true;
+                        permitirArrasto = false;
+                        System.out.println("Zoom Dentro");
                         restaurarTamanho.setVisibility(View.VISIBLE);
                         layoutImagens.setTranslationX(0);
                         layoutImagens.setTranslationY(0);
@@ -358,28 +325,32 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         zoomOut.setOnClickListener(new View.OnClickListener() {
             private ObjectAnimator animator;
+
             @Override
             public void onClick(View v) {
-                if (layoutImagens.getScaleX() >= 0.125){
+                if (layoutImagens.getScaleX() >= 0.125) {
                     layoutImagens.setScaleX(layoutImagens.getScaleX() * 0.5f);
                     layoutImagens.setScaleY(layoutImagens.getScaleY() * 0.5f);
                     System.out.println(layoutImagens.getScaleX());
                     System.out.println(layoutImagens.getScaleY());
 
-                    if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1){
+                    if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
                         isZooming = true;
+                        permitirArrasto = true;
                         restaurarTamanho.setVisibility(View.VISIBLE);
                         esconderIcones();
 
-                    } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1){
+                    } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1) {
                         restaurarTamanho.setVisibility(View.GONE);
                         layoutImagens.setTranslationX(0);
                         layoutImagens.setTranslationY(0);
+                        permitirArrasto = true;
                         isZooming = false;
                         voltarIconesAparecer();
 
                     } else {
-                        isZooming = false;
+                        isZooming = true;
+                        permitirArrasto = false;
                         restaurarTamanho.setVisibility(View.VISIBLE);
                         layoutImagens.setTranslationX(0);
                         layoutImagens.setTranslationY(0);
@@ -395,6 +366,17 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
         });
 
+        settings = getSharedPreferences(PREFS_NAME, 0);
+
+        // Recuperar a lista de exclusão salva
+        Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new HashSet<String>());
+        for (String uriString : exclusionList) {
+            Uri uri = Uri.parse(uriString);
+            DocumentFile file = DocumentFile.fromSingleUri(this, uri);
+            listaDeExclusao.add(file);
+        }
+        numeroLixeira = findViewById(R.id.numero_lixeira);
+        numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
 
 
         layoutImagens.setOnTouchListener(new View.OnTouchListener() {
@@ -404,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 //scaleDetector.onTouchEvent(event);
-                if (isZooming){
+                if (isZooming && permitirArrasto) {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_MOVE:
                             float currentX = event.getX();
@@ -418,99 +400,95 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         case MotionEvent.ACTION_DOWN:
                             x1 = event.getX();
                             y1 = event.getY();
-                            //voltarIconesAparecer();
                             break;
                         case MotionEvent.ACTION_UP:
                             currentTranslationX = layoutImagens.getTranslationX();
                             currentTranslationY = layoutImagens.getTranslationY();
-                            //voltarIconesAparecer();
                             break;
                     }
                     return true;
                 }
-                System.out.println("Ta fora do isZooming");
-                switch(event.getAction()) {
-                    case MotionEvent.ACTION_MOVE:
-                        if (animator != null && animator.isRunning()) {
-                            animator.cancel();
-                        }
-                        float currentX = event.getX();
-                        float deltaX = currentX - x1;
-                        layoutImagens.setTranslationX(deltaX);
-                        esconderIcones();
-                        //voltarIconesAparecer();
-                        break;
-                    case MotionEvent.ACTION_DOWN:
-                        x1 = event.getX();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        x2 = event.getX();
-                        deltaX = x2 - x1;
-                        if (Math.abs(deltaX) > MIN_DISTANCE) {
-                            if (x2 > x1) {
-                                // Deslizou da esquerda para a direita - Guardar arquivo
-                                animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", layoutImagens.getWidth());
-                                System.out.println("Arrastou para guardar");
+                if (permitirArrasto){
+                    System.out.println("Ta fora do isZooming");
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_MOVE:
+                            if (animator != null && animator.isRunning()) {
+                                animator.cancel();
+                            }
+                            float currentX = event.getX();
+                            float deltaX = currentX - x1;
+                            layoutImagens.setTranslationX(deltaX);
+                            esconderIcones();
+                            break;
+                        case MotionEvent.ACTION_DOWN:
+                            x1 = event.getX();
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            x2 = event.getX();
+                            deltaX = x2 - x1;
+                            if (Math.abs(deltaX) > MIN_DISTANCE) {
+                                if (x2 > x1) {
+                                    // Deslizou da esquerda para a direita - Guardar arquivo
+                                    animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", layoutImagens.getWidth());
+                                    System.out.println("Arrastou para guardar");
+                                    voltarIconesAparecer();
+                                    guardandoArquivo();
+                                } else {
+                                    // Deslizou da direita para a esquerda - Excluir arquivo
+                                    animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", -layoutImagens.getWidth());
+                                    System.out.println("Arrastou para excluir");
+                                    excluindoArquivo();
+                                    voltarIconesAparecer();
+                                }
+                                animator.setDuration(200);
+                                animator.addListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        isAnimating = false;
+                                        layoutImagens.setTranslationX(0);
+                                        continuarLoop(1 + voltador, resultado.get());
+                                    }
+                                });
+                                animator.start();
+                                isAnimating = true;
                                 voltarIconesAparecer();
                             } else {
-                                // Deslizou da direita para a esquerda - Excluir arquivo
-                                animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", -layoutImagens.getWidth());
-                                System.out.println("Arrastou para excluir");
-                                excluindoArquivo();
+                                // Deslizou menos que MIN_DISTANCE, então volta para o centro
+                                animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", 0);
+                                animator.setDuration(200);
+                                animator.start();
+                                isAnimating = true;
                                 voltarIconesAparecer();
                             }
-                            animator.setDuration(200);
-                            animator.addListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    isAnimating = false;
-                                    layoutImagens.setTranslationX(0);
-                                    continuarLoop(1 + voltador, resultado.get());
-                                }
-                            });
-                            animator.start();
-                            isAnimating = true;
-                            voltarIconesAparecer();
-                        } else {
-                            // Deslizou menos que MIN_DISTANCE, então volta para o centro
-                            animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", 0);
-                            animator.setDuration(200);
-                            animator.start();
-                            isAnimating = true;
-                            voltarIconesAparecer();
-                        }
-                        break;
+                            break;
+                    }
+                    v.performClick();
+
+                    // Aqui você pode adicionar o código para detectar o pressionamento longo
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        // Inicia o pressionamento longo
+                        v.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Aqui você pode adicionar o código para tornar os ícones mais transparentes
+                                System.out.println("Segurando o dedo no layout");
+                                constraintIconesCima = findViewById(R.id.constraint_icones_cima);
+                                constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+
+                            }
+                        }, ViewConfiguration.getLongPressTimeout());
+                    } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                        // Cancela o pressionamento longo
+
+                        voltarIconesAparecer();
+                        v.removeCallbacks(null);
+                    }
+
+                    return true;
                 }
-                v.performClick();
-
-                // Aqui você pode adicionar o código para detectar o pressionamento longo
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    // Inicia o pressionamento longo
-                    v.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Aqui você pode adicionar o código para tornar os ícones mais transparentes
-                            System.out.println("Segurando o dedo no layout");
-                            constraintIconesCima = findViewById(R.id.constraint_icones_cima);
-                            constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+                    return true;
 
 
-
-                            //constraintIconesCima.setAlpha(alphaIcone);
-                            //constraintIconesBaixo.setAlpha(alphaIcone);
-                        }
-                    }, ViewConfiguration.getLongPressTimeout());
-                } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                    // Cancela o pressionamento longo
-
-                    voltarIconesAparecer();
-
-                    //constraintIconesCima.setAlpha(1);
-                    //constraintIconesBaixo.setAlpha(1);
-                    v.removeCallbacks(null);
-                }
-
-                return true;
             }
         });
 
@@ -547,10 +525,21 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
                     }
                 })
-                //.setNegativeButton("Cancelar", null)
                 .create()
                 .show();
     }
+
+    private void saveExclusionList() {
+        Set<String> exclusionList = new HashSet<>();
+        for (DocumentFile file : listaDeExclusao) {
+            exclusionList.add(file.getUri().toString());
+        }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putStringSet(PREF_EXCLUSION_LIST, exclusionList);
+        editor.apply();
+    }
+
 
     public void excluindoArquivo() {
         boolean arquivoJaExcluido = false;
@@ -564,6 +553,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
         if (!arquivoJaExcluido) {
             listaDeExclusao.add(0, arquivoAtual.get());
+            saveExclusionList();
             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
             System.out.println(arquivoAtual.get().getUri());
         }
@@ -572,8 +562,21 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         System.out.println(listaDeExclusao);
     }
 
+    public void guardandoArquivo(){
+        for (DocumentFile arquivoExcluido : listaDeExclusao) {
+            if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
+                System.out.println("Já tem");
+                listaDeExclusao.remove(arquivoExcluido);
+                numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
+                System.out.println(arquivoExcluido.getUri());
+                break;
+            }
+        }
+        saveExclusionList();
+    }
 
-    public void voltarAoNormalTamanhoETransaltion(){
+
+    public void voltarAoNormalTamanhoETransaltion() {
         isZooming = false;
         layoutImagens.setTranslationX(0);
         layoutImagens.setTranslationY(0);
@@ -582,7 +585,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         restaurarTamanho.setVisibility(View.GONE);
         voltarIconesAparecer();
     }
-
 
 
     public void colocarToast() {
@@ -597,11 +599,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             System.out.println("dentro de onActivityResult o primeiro if passou");
             if (data != null && data.getData() != null) {
 
-
-                //pastaSelecionada = getFolderPathFromUri(data.getData());
                 pastaSelecionada = data.getData();
                 System.out.println("uma linha antes de chamar a função exibirImagem");
-                //exibirImagemPastaSelecionada(pastaSelecionada, offsetImagens);
             }
         }
     }
@@ -611,8 +610,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Intent data = result.getData();
                     if (data != null && data.getData() != null) {
-                        //String pastaUri = .getPath();
-                        //pastaSelecionada = getFolderPathFromUri(data.getData());
                         pastaSelecionada = data.getData();
 
                         getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -646,7 +643,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         return super.dispatchTouchEvent(evento);
     }
 
-
     @Override
     public void onPastaCimaSelecionadosClicked() {
         if (!pastaJaFoiSelecionada) {
@@ -661,8 +657,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
-
-    //private ActivityResultLauncher<Intent> folderPickerLauncher;
     DocumentFile[] arrayDeArquivos;
 
     public void selecionarPasta() {
@@ -708,15 +702,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             botaoVoltar = findViewById(R.id.voltar_imagem);
             layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
             numeroLixeira = findViewById(R.id.numero_lixeira);
-            //numeroLixeira.setText(String.valueOf(quantidadeApagadas));
-
-            int tamanhoLista = listaDeArquivos.length;
-
 
             View.OnClickListener onClickListener = v -> {
                 if (v.getId() == R.id.negar_imagem) {
                     excluindoArquivo();
-
+                } else if (v.getId() == R.id.aceitar_imagem){
+                    guardandoArquivo();
                 } else if (v.getId() == R.id.voltar_imagem) {
                     int indexImagemAnterior = imagensCarregadas - 2;
                     if (indexImagemAnterior >= 0) {
@@ -733,9 +724,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             listaDeExclusao.remove(indexArquivoExcluido);
                             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                         }
-
                     }
-
                     if (imagensCarregadas > 1) {
                         resultado.set(-2);
                         voltador = -2;
@@ -768,7 +757,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private ObjectAnimator animator;
-    public void voltarIconesAparecer(){
+
+    public void voltarIconesAparecer() {
         animator = ObjectAnimator.ofFloat(constraintIconesCima, "alpha", 1);
         animator.setDuration(200);
         animator.start();
@@ -777,13 +767,13 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         animator.start();
     }
 
-    public void voltarIconesCimaAparecer(){
+    public void voltarIconesCimaAparecer() {
         animator = ObjectAnimator.ofFloat(constraintIconesCima, "alpha", 1);
         animator.setDuration(200);
         animator.start();
     }
 
-    public void esconderIcones(){
+    public void esconderIcones() {
         animator = ObjectAnimator.ofFloat(constraintIconesCima, "alpha", alphaIcone);
         animator.setDuration(200);
         animator.start();
@@ -832,7 +822,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         botaoAvancar.setVisibility(View.VISIBLE);
         botaoExcluir.setVisibility(View.VISIBLE);
 
-        if (resetouPasta){
+        if (resetouPasta) {
             imagensCarregadas = 0;
             System.out.println("testar if");
         }
@@ -850,7 +840,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
             String caminhoArquivo = arquivo.getUri().toString();
 
-            //String extensao = arquivo.getType();
             String extensao = arquivo.getName();
 
             System.out.println(extensao);
@@ -886,7 +875,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     }
 
                 } else if (isAudio(extensao)) {
-                    System.out.println("um audio ai");
                     constraintAudio.setVisibility(View.VISIBLE);
                     extensaoDesconhecida.setVisibility(View.GONE);
 
@@ -914,7 +902,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             playButton = findViewById(R.id.play_button);
                             pauseButton = findViewById(R.id.pause_button);
                             seekBar = findViewById(R.id.seek_bar);
-                            //seekBar.setMax(mediaPlayer.getDuration());
 
                             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                                 @Override
@@ -925,12 +912,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                                     if (autoplaySwitch.isChecked()) {
                                         mediaPlayer.start();
-                                        System.out.println("Start audio checked");
                                         playButton.setVisibility(View.GONE);
                                         pauseButton.setVisibility(View.VISIBLE);
                                     } else {
                                         mediaPlayer.pause();
-                                        System.out.println("Pause audio checked");
                                         playButton.setVisibility(View.VISIBLE);
                                         pauseButton.setVisibility(View.GONE);
                                     }
@@ -941,7 +926,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                 @Override
                                 public void onClick(View v) {
                                     mediaPlayer.start();
-                                    System.out.println("Start audio");
                                     playButton.setVisibility(View.GONE);
                                     pauseButton.setVisibility(View.VISIBLE);
                                 }
@@ -951,7 +935,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                 @Override
                                 public void onClick(View v) {
                                     mediaPlayer.pause();
-                                    System.out.println("Pause audio");
                                     playButton.setVisibility(View.VISIBLE);
                                     pauseButton.setVisibility(View.GONE);
                                 }
@@ -972,13 +955,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                 @Override
                                 public void onStopTrackingTouch(SeekBar seekBar) {
                                 }
-
                             });
                         }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-
                 } else {
                     System.out.println("---------------------");
                     System.out.println("Arquivo de extensão desconhecida");
@@ -1007,13 +988,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 continue;
             }
             arquivoAtual.set(arquivo);
-
             resultado.set(0);
             ajuste = resultado.get();
             //i += voltador;
             voltador = 0;
-
         }
+
         if (ajuste >= 0) {
             imagensCarregadas += quantidadeDeImagens;
         } else {
@@ -1022,7 +1002,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 imagensCarregadas = 0;
             }
         }
-
 
         // Verifica se é a última imagem da pasta
         if (imagensCarregadas > tamanhoDaLista) {
@@ -1053,7 +1032,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             zoomOut.setVisibility(View.GONE);
 
         }
-
     }
 
     private boolean isImagem(String extensao) {
