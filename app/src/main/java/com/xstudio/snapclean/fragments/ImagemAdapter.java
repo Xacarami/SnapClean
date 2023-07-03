@@ -3,6 +3,7 @@ package com.xstudio.snapclean.fragments;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -19,9 +20,9 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     private List<DocumentFile> listaDeExclusao;
     private List<DocumentFile> listaDeSelecionados = new ArrayList<>();
 
-
     public interface OnItemClickListener {
         void onImagemClicked(DocumentFile imagem);
+        void onBotaoImagemClicked(DocumentFile imagem);
     }
 
     private OnItemClickListener listener;
@@ -29,11 +30,23 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     //ImageView imageView;
     //ImageView iconeSelecao;
 
+    public class ViewHolder extends RecyclerView.ViewHolder{
+        ImageView imageView;
+        ImageView iconeSelecao;
+        ImageButton botaoImagem;
+
+        public ViewHolder(@NonNull View itemView){
+            super(itemView);
+            imageView = itemView.findViewById(R.id.imagem);
+            iconeSelecao = itemView.findViewById(R.id.icone_selecao);
+            botaoImagem = itemView.findViewById(R.id.aumentar_imagem);
+        }
+    }
+
     public ImagemAdapter(List<DocumentFile> listaDeExclusao, OnItemClickListener listener){
         this.listaDeExclusao = listaDeExclusao;
         this.listener = listener;
     }
-
 
 
     @NonNull
@@ -67,7 +80,6 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         return extensao.endsWith("wav") || extensao.endsWith("mp3") || extensao.endsWith("m4a") || extensao.endsWith("wma");
     }
 
-
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DocumentFile imagem = listaDeExclusao.get(position);
@@ -82,6 +94,15 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
                     .load(R.mipmap.ic_musica)
                     .into(holder.imageView);
         }
+
+        holder.botaoImagem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onBotaoImagemClicked(imagem);
+                }
+            }
+        });
 
 
         // Adiciona um ouvinte de clique à imagem
@@ -114,17 +135,6 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         holder.itemView.setSelected(selecionado);
         holder.iconeSelecao.setVisibility(selecionado ? View.VISIBLE : View.GONE);
 
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder{
-        ImageView imageView;
-        ImageView iconeSelecao;
-
-        public ViewHolder(@NonNull View itemView){
-            super(itemView);
-            imageView = itemView.findViewById(R.id.imagem);
-            iconeSelecao = itemView.findViewById(R.id.icone_selecao);
-        }
     }
 
 

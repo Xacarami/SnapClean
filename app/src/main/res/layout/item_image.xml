@@ -21,13 +21,17 @@
         android:visibility="gone"
         />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/aumentar_imagem"
         android:layout_width="22dp"
         android:layout_height="22dp"
         android:layout_gravity="bottom|start"
-        android:src="@mipmap/ic_aumentar_imagem"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
         android:visibility="visible"
-        app:tint="#3A3A3A" />
+        app:srcCompat="@mipmap/ic_aumentar_imagem"
+        app:tint="#5065FF" />
+
+
 
 </FrameLayout>

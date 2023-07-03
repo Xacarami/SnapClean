@@ -95,15 +95,17 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     ConstraintLayout layoutPrincipal;
     ConstraintLayout constraintIconesCima;
     ImageButton iconeMaisImagens;
+    Switch switchBackup;
     private float currentTranslationX = 0f;
     private float currentTranslationY = 0f;
     private float moveScaleFactor = 2f;
     ConstraintLayout constraintIconesBaixo;
 
-    SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "MyPrefsFile";
     private static final String PREF_EXCLUSION_LIST = "exclusion_list";
-
+    private static final String PREF_SWITCH_AUTOPLAY = "switch_autoplay";
+    private static final String PREF_SWITCH_BACKUP = "switch_backup";
+    private SharedPreferences sharedPreferences;
     private SharedPreferences settings;
     private boolean acessoNaPasta = false;
     private boolean isZooming;
@@ -145,20 +147,32 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
 
 
-        //Gravar a decisão passada do usuário
-        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-        autoplaySwitch = findViewById(R.id.switchAutoPlay);
+        sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
+
+        // Gravar a decisão passada do usuário sobre autoplay
+        Switch autoplaySwitch = findViewById(R.id.switchAutoPlay);
+        autoplaySwitch.setChecked(sharedPreferences.getBoolean(PREF_SWITCH_AUTOPLAY, true));
         autoplaySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("autoplay_switch_state", isChecked);
+                editor.putBoolean(PREF_SWITCH_AUTOPLAY, isChecked);
                 editor.apply();
             }
         });
 
-        boolean switchState = sharedPreferences.getBoolean("autoplay_switch_state", true);
-        autoplaySwitch.setChecked(switchState);
+        // Gravar decisão sobre backup
+        Switch switchBackup = findViewById(R.id.switchBackup);
+        switchBackup.setChecked(sharedPreferences.getBoolean(PREF_SWITCH_BACKUP, true));
+        switchBackup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(PREF_SWITCH_BACKUP, isChecked);
+                editor.apply();
+            }
+        });
+
 
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -369,12 +383,20 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         settings = getSharedPreferences(PREFS_NAME, 0);
 
         // Recuperar a lista de exclusão salva
+        switchBackup = findViewById(R.id.switchBackup);
         Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new HashSet<String>());
-        for (String uriString : exclusionList) {
-            Uri uri = Uri.parse(uriString);
-            DocumentFile file = DocumentFile.fromSingleUri(this, uri);
-            listaDeExclusao.add(file);
+        if (switchBackup.isChecked()){
+            for (String uriString : exclusionList) {
+                Uri uri = Uri.parse(uriString);
+                DocumentFile file = DocumentFile.fromSingleUri(this, uri);
+                listaDeExclusao.add(file);
+            }
+        } else {
+            listaDeExclusao.clear();
+            exclusionList.clear();
+            System.out.println("Ta desligado pooo");
         }
+
         numeroLixeira = findViewById(R.id.numero_lixeira);
         numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
 
@@ -530,14 +552,19 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private void saveExclusionList() {
+        switchBackup = findViewById(R.id.switchBackup);
         Set<String> exclusionList = new HashSet<>();
-        for (DocumentFile file : listaDeExclusao) {
-            exclusionList.add(file.getUri().toString());
-        }
+        if (switchBackup.isChecked()){
+            for (DocumentFile file : listaDeExclusao) {
+                exclusionList.add(file.getUri().toString());
+            }
 
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putStringSet(PREF_EXCLUSION_LIST, exclusionList);
-        editor.apply();
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putStringSet(PREF_EXCLUSION_LIST, exclusionList);
+            editor.apply();
+        } else {
+            exclusionList.clear();
+        }
     }
 
 
@@ -797,6 +824,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     };
 
+    //serve para passar o estado do switch para o SelecionadosFragment.java
+    public boolean isAutoplayChecked() {
+        Switch autoplaySwitch = findViewById(R.id.switchAutoPlay);
+        return autoplaySwitch.isChecked();
+    }
 
     ConstraintLayout constraintAudio;
     ConstraintLayout extensaoDesconhecida;
@@ -812,6 +844,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         extensaoDesconhecida = findViewById(R.id.constraint_extensao_desconhecida);
         textoNomeArquivo = findViewById(R.id.texto_nome_arquivo);
         textoAviso = findViewById(R.id.texto_aviso);
+        zoomIn = findViewById(R.id.zoom_in);
+        zoomOut = findViewById(R.id.zoom_out);
 
         iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
         botaoAvancar = findViewById(R.id.aceitar_imagem);
@@ -851,6 +885,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     videoView.setVisibility(View.GONE);
                     constraintAudio.setVisibility(View.GONE);
                     extensaoDesconhecida.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.VISIBLE);
+                    zoomOut.setVisibility(View.VISIBLE);
 
                     Glide.with(this)
                             .load(caminhoArquivo)
@@ -861,6 +897,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     videoView.setVisibility(View.VISIBLE);
                     constraintAudio.setVisibility(View.GONE);
                     extensaoDesconhecida.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.GONE);
+                    zoomOut.setVisibility(View.GONE);
 
                     MediaController mediaController = new MediaController(this);
                     mediaController.setAnchorView(videoView);
@@ -877,6 +915,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 } else if (isAudio(extensao)) {
                     constraintAudio.setVisibility(View.VISIBLE);
                     extensaoDesconhecida.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.GONE);
+                    zoomOut.setVisibility(View.GONE);
 
                     try {
                         ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(arquivo.getUri(), "r");
@@ -968,6 +1008,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     imageView.setVisibility(View.GONE);
                     videoView.setVisibility(View.GONE);
                     constraintAudio.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.GONE);
+                    zoomOut.setVisibility(View.GONE);
 
                     extensaoDesconhecida.setVisibility(View.VISIBLE);
                     textoNomeArquivo.setText(arquivo.getName());
@@ -981,6 +1023,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 imageView.setVisibility(View.GONE);
                 videoView.setVisibility(View.GONE);
                 constraintAudio.setVisibility(View.GONE);
+                zoomIn.setVisibility(View.GONE);
+                zoomOut.setVisibility(View.GONE);
 
                 extensaoDesconhecida.setVisibility(View.VISIBLE);
                 textoNomeArquivo.setText(arquivo.getName());
@@ -1016,8 +1060,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
             botaoVoltar = findViewById(R.id.voltar_imagem);
             layoutImagens = findViewById(R.id.layout_imagens);
-            zoomIn = findViewById(R.id.zoom_in);
-            zoomOut = findViewById(R.id.zoom_out);
             iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
             botaoAvancar = findViewById(R.id.aceitar_imagem);
             botaoExcluir = findViewById(R.id.negar_imagem);

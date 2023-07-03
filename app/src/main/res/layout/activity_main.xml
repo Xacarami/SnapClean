@@ -437,6 +437,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <Switch
+            android:id="@+id/switchBackup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="56dp"
+            android:layout_marginEnd="20dp"
+            android:checked="true"
+            android:text="Salvar Backup dos Excluídos"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:translationY="70dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/textView2"
             android:layout_width="0dp"
