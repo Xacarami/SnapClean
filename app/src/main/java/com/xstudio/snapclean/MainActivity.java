@@ -552,24 +552,21 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     Set<String> exclusionList = new LinkedHashSet<>();
-    private void saveExclusionList(DocumentFile documentFile) {
+    private void saveExclusionList() {
         switchBackup = findViewById(R.id.switchBackup);
         if (switchBackup.isChecked()){
-            exclusionList.add(documentFile.getUri().toString());
-            /*
+
             for (DocumentFile file : listaDeExclusao) {
                 exclusionList.add(file.getUri().toString());
             }
-
-             */
+/*
             for(DocumentFile file : listaDeExclusao){
                 System.out.println("listaDeExclusao -> "+file.getName());
             }
             for(String file : exclusionList){
                 System.out.println("exclusionList -> "+file);
             }
-
-
+ */
             SharedPreferences.Editor editor = settings.edit();
             editor.putStringSet(PREF_EXCLUSION_LIST, exclusionList);
             editor.apply();
@@ -591,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
         if (!arquivoJaExcluido) {
             listaDeExclusao.add(0, arquivoAtual.get());
-            saveExclusionList(arquivoAtual.get());
+            saveExclusionList();
             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
             System.out.println(arquivoAtual.get().getUri());
         }
@@ -605,13 +602,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
                 System.out.println("Já tem");
                 listaDeExclusao.remove(arquivoExcluido);
-                exclusionList.remove(arquivoExcluido);
                 numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                 System.out.println(arquivoExcluido.getUri());
                 break;
             }
         }
-        saveExclusionList(arquivoAtual.get());
+        saveExclusionList();
     }
 
 
@@ -761,7 +757,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         }
                         if (indexArquivoExcluido != -1) {
                             listaDeExclusao.remove(indexArquivoExcluido);
-                            exclusionList.remove(listaDeExclusao.get(indexArquivoExcluido));
+                            saveExclusionList();
                             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                         }
                     }

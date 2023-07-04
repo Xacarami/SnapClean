@@ -42,6 +42,7 @@ import java.util.List;
 public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnItemClickListener {
     //private List<DocumentFile> listaDeExclusao;
     private ArrayList<DocumentFile> listaDeExclusao;
+    TextView quantidadeTotal;
     private boolean todasSelecionadas = false;
 
 
@@ -108,6 +109,9 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
         adapter = new ImagemAdapter(listaDeExclusao, this);
         recyclerView.setAdapter(adapter);
+
+        quantidadeTotal = getView().findViewById(R.id.quantidade_total);
+        quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
 
         ImageButton selecionador = view.findViewById(R.id.selecionador);
         selecionador.setOnClickListener(new View.OnClickListener() {

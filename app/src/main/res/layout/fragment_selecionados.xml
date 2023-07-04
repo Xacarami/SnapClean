@@ -92,6 +92,20 @@
             app:srcCompat="@mipmap/ic_baixo_seta"
             app:tint="#FFFFFF" />
 
+        <TextView
+            android:id="@+id/quantidade_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="110dp"
+            android:layout_marginEnd="115dp"
+            android:text="Quantididade: "
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/selecionador"
+            app:layout_constraintStart_toEndOf="@+id/voltar_selecionados"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
