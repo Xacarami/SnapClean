@@ -1,8 +1,7 @@
 package com.xstudio.snapclean.fragments;
 
-import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,7 +14,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.VideoView;
 
@@ -37,7 +35,6 @@ import com.xstudio.snapclean.R;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnItemClickListener {
     //private List<DocumentFile> listaDeExclusao;
@@ -50,7 +47,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         this.listaDeExclusao = listaDeExclusao;
     }
 
-    private SelecionadosViewModel viewModel;
+    SelecionadosViewModel viewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -69,32 +66,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         imagemTelaInteira.setVisibility(View.VISIBLE);
     }
 
-
-    //para que o ícone de pasta aqui possa executar uma função na MainActivity.java
-    public interface OnFragmentInteractionListener {
-        void onPastaCimaSelecionadosClicked();
-    }
-
-    private OnFragmentInteractionListener listener;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            listener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " deve implementar OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-
     private ImagemAdapter adapter;
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
@@ -111,19 +82,17 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         recyclerView.setAdapter(adapter);
 
         quantidadeTotal = getView().findViewById(R.id.quantidade_total);
-        quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+        String textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+        quantidadeTotal.setText(textificandoTotal);
 
         ImageButton selecionador = view.findViewById(R.id.selecionador);
-        selecionador.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (todasSelecionadas) {
-                    adapter.desselecionarTodas();
-                    todasSelecionadas = false;
-                } else {
-                    adapter.selecionarTodas();
-                    todasSelecionadas = true;
-                }
+        selecionador.setOnClickListener(v -> {
+            if (todasSelecionadas) {
+                adapter.desselecionarTodas();
+                todasSelecionadas = false;
+            } else {
+                adapter.selecionarTodas();
+                todasSelecionadas = true;
             }
         });
     }
@@ -137,16 +106,13 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         ConstraintLayout layoutPrincipal = getActivity().findViewById(R.id.layout_principal);
         ImageButton voltarSelecionados = rootView.findViewById(R.id.voltar_selecionados);
 
-        voltarSelecionados.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                layoutPrincipal.setVisibility(View.VISIBLE);
-                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.remove(SelecionadosFragment.this);
-                fragmentTransaction.commit();
-                System.out.println("Botao voltar foi clicado");
-            }
+        voltarSelecionados.setOnClickListener(v -> {
+            layoutPrincipal.setVisibility(View.VISIBLE);
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.remove(SelecionadosFragment.this);
+            fragmentTransaction.commit();
+            System.out.println("Botao voltar foi clicado");
         });
         return rootView;
     }
@@ -167,7 +133,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     VideoView videoView;
     ConstraintLayout constraintAudio;
     ConstraintLayout extensaoDesconhecida;
-    Switch autoplaySwitch;
     MediaPlayer mediaPlayer;
     SeekBar seekBar;
     ImageButton playButton;
@@ -176,12 +141,31 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     TextView textoNomeArquivo;
     ImageButton setaBaixo;
     FrameLayout layoutImagens;
+    TextView nomeAudio;
+    TextView tempoAudioMaximo;
+    TextView tempoAudioPercorrido;
+
     private final Handler handler = new Handler(Looper.getMainLooper());
+
     private final Runnable updateSeekBarRunnable = new Runnable() {
         @Override
         public void run() {
             if (mediaPlayer != null) {
                 seekBar.setProgress(mediaPlayer.getCurrentPosition());
+
+                // Atualizar o TextView com o tempo percorrido
+                int duracao = mediaPlayer.getCurrentPosition();
+                int segundos = (duracao / 1000) % 60;
+                int minutos = (duracao / (1000 * 60)) % 60;
+                int horas = (duracao / (1000 * 60 * 60)) % 24;
+                String textoAudioTempoAtual;
+                if (horas > 0) {
+                    textoAudioTempoAtual = String.format("%02d:%02d:%02d", horas, minutos, segundos);
+                } else {
+                    textoAudioTempoAtual = String.format("%02d:%02d", minutos, segundos);
+                }
+                tempoAudioPercorrido.setText(textoAudioTempoAtual);
+
                 handler.postDelayed(this, 200);
             }
         }
@@ -215,28 +199,32 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         setaBaixo = getView().findViewById(R.id.ic_seta_baixo);
         textoNomeArquivo = getView().findViewById(R.id.texto_nome_arquivo_tela_inteira);
         //numeroLixeira = getView().findViewById(R.id.numero_lixeira);
+        tempoAudioMaximo = getView().findViewById(R.id.tempo_audio_maximo_tela_inteira);
+        tempoAudioPercorrido = getView().findViewById(R.id.tempo_audio_percorrido_tela_inteira);
+        nomeAudio = getView().findViewById(R.id.nome_audio_tela_inteira);
 
         setaBaixo.setVisibility(View.VISIBLE);
         voltarSelecionados.setVisibility(View.GONE);
-        setaBaixo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                quadrosExcluidos.setVisibility(View.VISIBLE);
-                layoutImagens.setVisibility(View.GONE);
-                selecionador.setVisibility(View.VISIBLE);
-                voltarSelecionados.setVisibility(View.VISIBLE);
-                setaBaixo.setVisibility(View.GONE);
+        setaBaixo.setOnClickListener(v -> {
+            quadrosExcluidos.setVisibility(View.VISIBLE);
+            layoutImagens.setVisibility(View.GONE);
+            selecionador.setVisibility(View.VISIBLE);
+            voltarSelecionados.setVisibility(View.VISIBLE);
+            setaBaixo.setVisibility(View.GONE);
+            if(mediaPlayer != null){
+                mediaPlayer.pause();
+            }
+            if (videoView != null){
+                videoView.pause();
             }
         });
 
         //Para a tela cheia
-        if (arquivo.getType() != null) {
+        if (arquivo.getType() != null && extensao != null) {
             if (isImagem(extensao)) {
-                System.out.println("É imagem");
                 imageView.setVisibility(View.VISIBLE);
                 videoView.setVisibility(View.GONE);
                 constraintAudio.setVisibility(View.GONE);
-                System.out.println("Audio era pra ter ido de base");
                 extensaoDesconhecida.setVisibility(View.GONE);
 
                 Glide.with(imageView.getContext())
@@ -244,7 +232,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         .into(imageView);
 
             } else if (isVideo(extensao)) {
-                System.out.println("É Video");
                 imageView.setVisibility(View.GONE);
                 videoView.setVisibility(View.VISIBLE);
                 constraintAudio.setVisibility(View.GONE);
@@ -263,7 +250,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 }
 
             } else if (isAudio(extensao)) {
-                System.out.println("É audio");
                 constraintAudio.setVisibility(View.VISIBLE);
                 extensaoDesconhecida.setVisibility(View.GONE);
                 imageView.setVisibility(View.GONE);
@@ -276,12 +262,9 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
                         if (mediaPlayer == null) {
                             mediaPlayer = new MediaPlayer();
-                            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                @Override
-                                public void onPrepared(MediaPlayer mp) {
-                                    seekBar.setMax(mediaPlayer.getDuration());
-                                    handler.post(updateSeekBarRunnable);
-                                }
+                            mediaPlayer.setOnPreparedListener(mp -> {
+                                seekBar.setMax(mediaPlayer.getDuration());
+                                handler.post(updateSeekBarRunnable);
                             });
                         } else {
                             mediaPlayer.reset();
@@ -290,45 +273,55 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         mediaPlayer.setDataSource(fileDescriptor);
                         mediaPlayer.prepareAsync();
 
+                        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                        mmr.setDataSource(getContext(), arquivo.getUri());
+                        String title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+
+                        //nomeAudio.setText(arquivo.getName());
+                        nomeAudio.setText(title);
+
                         playButton = getView().findViewById(R.id.play_button_tela_inteira);
                         pauseButton = getView().findViewById(R.id.pause_button_tela_inteira);
                         seekBar = getView().findViewById(R.id.seek_bar_tela_inteira);
 
-                        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                            @Override
-                            public void onPrepared(MediaPlayer mp) {
-                                seekBar.setMax(mediaPlayer.getDuration());
-                                System.out.println(mediaPlayer.getDuration());
-                                handler.post(updateSeekBarRunnable);
+                        playButton.setVisibility(View.VISIBLE);
+                        pauseButton.setVisibility(View.GONE);
 
-                                if (autoplaySwitch) {
-                                    mediaPlayer.start();
-                                    playButton.setVisibility(View.GONE);
-                                    pauseButton.setVisibility(View.VISIBLE);
-                                } else {
-                                    mediaPlayer.pause();
-                                    playButton.setVisibility(View.VISIBLE);
-                                    pauseButton.setVisibility(View.GONE);
-                                }
+                        mediaPlayer.setOnPreparedListener(mp -> {
+                            int duracao = mediaPlayer.getDuration();
+                            int segundos = (duracao / 1000) % 60;
+                            int minutos = (duracao / (1000 * 60)) % 60;
+                            int horas = (duracao / (1000 * 60 * 60)) % 24;
+                            String textoTempoDuracaoTotal;
+                            if (horas > 0) {
+                                textoTempoDuracaoTotal = String.format("%02d:%02d:%02d", horas, minutos, segundos);
+                            } else {
+                                textoTempoDuracaoTotal = String.format("%02d:%02d", minutos, segundos);
                             }
-                        });
+                            tempoAudioMaximo.setText(textoTempoDuracaoTotal);
 
-                        playButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
+                            seekBar.setMax(mediaPlayer.getDuration());
+                            System.out.println(mediaPlayer.getDuration());
+                            handler.post(updateSeekBarRunnable);
+
+                            if (autoplaySwitch) {
                                 mediaPlayer.start();
+                                System.out.println("Play automatico");
                                 playButton.setVisibility(View.GONE);
                                 pauseButton.setVisibility(View.VISIBLE);
                             }
                         });
 
-                        pauseButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                mediaPlayer.pause();
-                                playButton.setVisibility(View.VISIBLE);
-                                pauseButton.setVisibility(View.GONE);
-                            }
+                        playButton.setOnClickListener(v -> {
+                            mediaPlayer.start();
+                            playButton.setVisibility(View.GONE);
+                            pauseButton.setVisibility(View.VISIBLE);
+                        });
+
+                        pauseButton.setOnClickListener(v -> {
+                            mediaPlayer.pause();
+                            playButton.setVisibility(View.VISIBLE);
+                            pauseButton.setVisibility(View.GONE);
                         });
 
                         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

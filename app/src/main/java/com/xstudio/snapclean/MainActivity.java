@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MainActivity extends AppCompatActivity implements SelecionadosFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
 
 
     //TextView hello;
@@ -632,6 +632,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     //Criada para cuidar com a sobreposição de pastas que não foram finalizadas
+    /*
     @Override
     public void onPastaCimaSelecionadosClicked() {
         if (!pastaJaFoiSelecionada) {
@@ -645,6 +646,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         }
     }
+
+     */
 
     DocumentFile[] arrayDeArquivos;
 
@@ -826,16 +829,17 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         numeroLixeira = findViewById(R.id.numero_lixeira);
         tempoAudioMaximo = findViewById(R.id.tempo_audio_maximo);
         tempoAudioPercorrido = findViewById(R.id.tempo_audio_percorrido);
+        nomeAudio = findViewById(R.id.nome_audio);
 
         iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
         botaoAvancar = findViewById(R.id.aceitar_imagem);
         botaoExcluir = findViewById(R.id.negar_imagem);
-        nomeAudio = findViewById(R.id.nome_audio);
 
         botaoVoltar.setVisibility(View.VISIBLE);
         iconeMaisImagens.setVisibility(View.VISIBLE);
         botaoAvancar.setVisibility(View.VISIBLE);
         botaoExcluir.setVisibility(View.VISIBLE);
+        constraintIconesBaixo.setVisibility(View.VISIBLE);
 
         if (resetouPasta) {
             imagensCarregadas = 0;
@@ -916,9 +920,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
                             mmr.setDataSource(this, arquivo.getUri());
                             String title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-                            //String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
 
-                            //nomeAudio.setText(arquivo.getName());
                             nomeAudio.setText(title);
 
                             playButton = findViewById(R.id.play_button);
@@ -1041,17 +1043,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             pastaJaFoiSelecionada = false;
             imagensCarregadas = 0;
 
-            botaoVoltar = findViewById(R.id.voltar_imagem);
-            layoutImagens = findViewById(R.id.layout_imagens);
-            iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
-            botaoAvancar = findViewById(R.id.aceitar_imagem);
-            botaoExcluir = findViewById(R.id.negar_imagem);
+            constraintIconesBaixo.setVisibility(View.GONE);
 
             layoutPastaCentral.setVisibility(View.VISIBLE);
-            botaoVoltar.setVisibility(View.VISIBLE);
-            iconeMaisImagens.setVisibility(View.GONE);
-            botaoAvancar.setVisibility(View.GONE);
-            botaoExcluir.setVisibility(View.GONE);
             layoutImagens.setVisibility(View.GONE);
             zoomIn.setVisibility(View.GONE);
             zoomOut.setVisibility(View.GONE);
