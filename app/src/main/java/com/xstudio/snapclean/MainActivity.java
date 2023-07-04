@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     };
 
     //Isso servirá para desativar os ícones ao abrir a sideBar
-    List<View> icons = new ArrayList<>();
+    ArrayList<View> icons = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -384,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         // Recuperar a lista de exclusão salva
         switchBackup = findViewById(R.id.switchBackup);
-        Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new HashSet<String>());
+        Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<String>());
         if (switchBackup.isChecked()){
             for (String uriString : exclusionList) {
                 Uri uri = Uri.parse(uriString);
@@ -394,7 +395,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         } else {
             listaDeExclusao.clear();
             exclusionList.clear();
-            System.out.println("Ta desligado pooo");
         }
 
         numeroLixeira = findViewById(R.id.numero_lixeira);
@@ -551,13 +551,24 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 .show();
     }
 
-    private void saveExclusionList() {
+    Set<String> exclusionList = new LinkedHashSet<>();
+    private void saveExclusionList(DocumentFile documentFile) {
         switchBackup = findViewById(R.id.switchBackup);
-        Set<String> exclusionList = new HashSet<>();
         if (switchBackup.isChecked()){
+            exclusionList.add(documentFile.getUri().toString());
+            /*
             for (DocumentFile file : listaDeExclusao) {
                 exclusionList.add(file.getUri().toString());
             }
+
+             */
+            for(DocumentFile file : listaDeExclusao){
+                System.out.println("listaDeExclusao -> "+file.getName());
+            }
+            for(String file : exclusionList){
+                System.out.println("exclusionList -> "+file);
+            }
+
 
             SharedPreferences.Editor editor = settings.edit();
             editor.putStringSet(PREF_EXCLUSION_LIST, exclusionList);
@@ -580,7 +591,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
         if (!arquivoJaExcluido) {
             listaDeExclusao.add(0, arquivoAtual.get());
-            saveExclusionList();
+            saveExclusionList(arquivoAtual.get());
             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
             System.out.println(arquivoAtual.get().getUri());
         }
@@ -594,12 +605,13 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
                 System.out.println("Já tem");
                 listaDeExclusao.remove(arquivoExcluido);
+                exclusionList.remove(arquivoExcluido);
                 numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                 System.out.println(arquivoExcluido.getUri());
                 break;
             }
         }
-        saveExclusionList();
+        saveExclusionList(arquivoAtual.get());
     }
 
 
@@ -749,6 +761,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         }
                         if (indexArquivoExcluido != -1) {
                             listaDeExclusao.remove(indexArquivoExcluido);
+                            exclusionList.remove(listaDeExclusao.get(indexArquivoExcluido));
                             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                         }
                     }
@@ -1016,7 +1029,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     textoAviso.setText("Extensão não suportada");
 
                     System.out.println("---------------------");
-                    continue;
                 }
             } else {
                 System.out.println("Não tem extensão");
@@ -1029,8 +1041,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 extensaoDesconhecida.setVisibility(View.VISIBLE);
                 textoNomeArquivo.setText(arquivo.getName());
                 textoAviso.setText("Extensão não encontrada");
-                continue;
             }
+
             arquivoAtual.set(arquivo);
             resultado.set(0);
             ajuste = resultado.get();

@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder> {
-    private List<DocumentFile> listaDeExclusao;
-    private List<DocumentFile> listaDeSelecionados = new ArrayList<>();
+    private ArrayList<DocumentFile> listaDeExclusao;
+    private ArrayList<DocumentFile> listaDeSelecionados = new ArrayList<>();
 
     public interface OnItemClickListener {
         void onImagemClicked(DocumentFile imagem);
@@ -26,9 +26,6 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     }
 
     private OnItemClickListener listener;
-
-    //ImageView imageView;
-    //ImageView iconeSelecao;
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         ImageView imageView;
@@ -43,7 +40,7 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         }
     }
 
-    public ImagemAdapter(List<DocumentFile> listaDeExclusao, OnItemClickListener listener){
+    public ImagemAdapter(ArrayList<DocumentFile> listaDeExclusao, OnItemClickListener listener){
         this.listaDeExclusao = listaDeExclusao;
         this.listener = listener;
     }
@@ -92,6 +89,10 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         } else if(isAudio(extensao)){
             Glide.with(holder.imageView.getContext())
                     .load(R.mipmap.ic_musica)
+                    .into(holder.imageView);
+        } else {
+            Glide.with(holder.imageView.getContext())
+                    .load(R.mipmap.ic_alerta)
                     .into(holder.imageView);
         }
 

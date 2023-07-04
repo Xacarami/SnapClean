@@ -36,14 +36,16 @@ import com.xstudio.snapclean.R;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnItemClickListener {
-    private List<DocumentFile> listaDeExclusao;
+    //private List<DocumentFile> listaDeExclusao;
+    private ArrayList<DocumentFile> listaDeExclusao;
     private boolean todasSelecionadas = false;
 
 
-    public SelecionadosFragment(List<DocumentFile> listaDeExclusao){
+    public SelecionadosFragment(ArrayList<DocumentFile> listaDeExclusao){
         this.listaDeExclusao = listaDeExclusao;
     }
 
@@ -223,6 +225,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
             }
         });
 
+        //Para a tela cheia
         if (arquivo.getType() != null) {
             if (isImagem(extensao)) {
                 System.out.println("É imagem");
@@ -371,7 +374,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         }
     }
 
-    public void atualizarListaDeExclusao(List<DocumentFile> listaDeExclusao){
+    public void atualizarListaDeExclusao(ArrayList<DocumentFile> listaDeExclusao){
         this.listaDeExclusao = listaDeExclusao;
         adapter.notifyDataSetChanged();
     }
