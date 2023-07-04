@@ -18,12 +18,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,7 +33,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -52,10 +50,7 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,8 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MainActivity extends AppCompatActivity implements SelecionadosFragment.OnFragmentInteractionListener {
 
 
-    TextView hello;
-    //TextView textoTeste;
+    //TextView hello;
     private DrawerLayout drawerLayout;
     private static final int REQUEST_STORAGE_PERMISSIONS = 1;
 
@@ -77,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     private ConstraintLayout layoutPastaCentral;
     private Boolean pastaJaFoiSelecionada = false;
     private int imagensCarregadas = 0;
-    private int offsetImagens = 10;
 
     ImageButton botaoAvancar;
     ImageButton botaoExcluir;
@@ -86,12 +79,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     ImageButton zoomOut;
     Button restaurarTamanho;
     Switch autoplaySwitch;
-    int tirando = 0;
-    int continuando = 0;
-    private SelecionadosFragment testeSeJaFoiCriado;
-    ConstraintLayout containerSelecionados;
+
+    //O testeSeJaFoiCriado diz que não foi usado, mas é importante
+    SelecionadosFragment testeSeJaFoiCriado;
     Boolean resetouPasta = false;
-    private ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
+    private final ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
     FrameLayout layoutImagens;
     ConstraintLayout layoutPrincipal;
     ConstraintLayout constraintIconesCima;
@@ -99,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     Switch switchBackup;
     private float currentTranslationX = 0f;
     private float currentTranslationY = 0f;
-    private float moveScaleFactor = 2f;
     ConstraintLayout constraintIconesBaixo;
 
     private static final String PREFS_NAME = "MyPrefsFile";
@@ -129,8 +120,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        hello = findViewById(R.id.hello);
+        //hello = findViewById(R.id.hello);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
@@ -140,40 +130,33 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             ActivityCompat.requestPermissions(this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
             System.out.println("Permissão talvez negada");
             Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
-            hello.setText("Permissões ainda não aceitas");
+            //hello.setText("Permissões ainda não aceitas");
         } else {
             System.out.println("Permissão concedida");
             acessoNaPasta = true;
-            hello.setText("Permissões concedidas anteriormente");
+            //hello.setText("Permissões concedidas anteriormente");
         }
 
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, 0);
 
         // Gravar a decisão passada do usuário sobre autoplay
-        Switch autoplaySwitch = findViewById(R.id.switchAutoPlay);
+        autoplaySwitch = findViewById(R.id.switchAutoPlay);
         autoplaySwitch.setChecked(sharedPreferences.getBoolean(PREF_SWITCH_AUTOPLAY, true));
-        autoplaySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean(PREF_SWITCH_AUTOPLAY, isChecked);
-                editor.apply();
-            }
+        autoplaySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(PREF_SWITCH_AUTOPLAY, isChecked);
+            editor.apply();
         });
 
         // Gravar decisão sobre backup
-        Switch switchBackup = findViewById(R.id.switchBackup);
+        switchBackup = findViewById(R.id.switchBackup);
         switchBackup.setChecked(sharedPreferences.getBoolean(PREF_SWITCH_BACKUP, true));
-        switchBackup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean(PREF_SWITCH_BACKUP, isChecked);
-                editor.apply();
-            }
+        switchBackup.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(PREF_SWITCH_BACKUP, isChecked);
+            editor.apply();
         });
-
 
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -184,14 +167,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         ImageButton optionIcon = findViewById(R.id.opcoes);
         layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
 
-        optionIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    drawerLayout.openDrawer(GravityCompat.START);
-                }
+        optionIcon.setOnClickListener(view -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
             }
         });
 
@@ -225,39 +205,30 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
 
         ImageView icLixeira1 = findViewById(R.id.lixeira);
-        icLixeira1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (testeSeJaFoiCriado == null) {
-                    SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.container_selecionados, selecionadosFragment)
-                            .commit();
-                } else {
-                    testeSeJaFoiCriado.atualizarListaDeExclusao(listaDeExclusao);
-                }
-                layoutPrincipal = findViewById(R.id.layout_principal);
-                layoutPrincipal.setVisibility(View.GONE);
+        icLixeira1.setOnClickListener(view -> {
+            if (testeSeJaFoiCriado == null) {
+                SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container_selecionados, selecionadosFragment)
+                        .commit();
+            } else {
+                testeSeJaFoiCriado.atualizarListaDeExclusao(listaDeExclusao);
             }
+            layoutPrincipal = findViewById(R.id.layout_principal);
+            layoutPrincipal.setVisibility(View.GONE);
         });
 
 
         iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
-        iconeMaisImagens.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                System.out.println("Ta clicando Mais Imagens");
-                colocarToast();
-            }
+        iconeMaisImagens.setOnClickListener(view -> {
+            System.out.println("Ta clicando Mais Imagens");
+            colocarToast();
         });
 
         ImageButton iconeInfo = findViewById(R.id.info_button);
-        iconeInfo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                System.out.println("Ta clicando Infos");
-                Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
-            }
+        iconeInfo.setOnClickListener(view -> {
+            System.out.println("Ta clicando Infos");
+            Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
         });
 
 
@@ -303,90 +274,77 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         zoomOut = findViewById(R.id.zoom_out);
         restaurarTamanho = findViewById(R.id.restaurar_tamanho);
 
-        zoomIn.setOnClickListener(new View.OnClickListener() {
-            private ObjectAnimator animator;
+        //private ObjectAnimator animator;
+        zoomIn.setOnClickListener(v -> {
+            if (layoutImagens.getScaleX() <= 8) {
 
-            @Override
-            public void onClick(View v) {
-                if (layoutImagens.getScaleX() <= 8) {
+                layoutImagens.setScaleX(layoutImagens.getScaleX() * 2f);
+                layoutImagens.setScaleY(layoutImagens.getScaleY() * 2f);
+                if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
+                    isZooming = true;
+                    permitirArrasto = true;
+                    restaurarTamanho.setVisibility(View.VISIBLE);
+                    esconderIcones();
 
-                    layoutImagens.setScaleX(layoutImagens.getScaleX() * 2f);
-                    layoutImagens.setScaleY(layoutImagens.getScaleY() * 2f);
-                    if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
-                        isZooming = true;
-                        permitirArrasto = true;
-                        restaurarTamanho.setVisibility(View.VISIBLE);
-                        esconderIcones();
+                } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1) {
+                    restaurarTamanho.setVisibility(View.GONE);
+                    layoutImagens.setTranslationX(0);
+                    layoutImagens.setTranslationY(0);
+                    isZooming = false;
+                    permitirArrasto = true;
+                    voltarIconesAparecer();
 
-                    } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1) {
-                        restaurarTamanho.setVisibility(View.GONE);
-                        layoutImagens.setTranslationX(0);
-                        layoutImagens.setTranslationY(0);
-                        isZooming = false;
-                        permitirArrasto = true;
-                        voltarIconesAparecer();
-
-                    } else {
-                        isZooming = true;
-                        permitirArrasto = false;
-                        System.out.println("Zoom Dentro");
-                        restaurarTamanho.setVisibility(View.VISIBLE);
-                        layoutImagens.setTranslationX(0);
-                        layoutImagens.setTranslationY(0);
-                    }
+                } else {
+                    isZooming = true;
+                    permitirArrasto = false;
+                    System.out.println("Zoom Dentro");
+                    restaurarTamanho.setVisibility(View.VISIBLE);
+                    layoutImagens.setTranslationX(0);
+                    layoutImagens.setTranslationY(0);
                 }
             }
         });
 
-        zoomOut.setOnClickListener(new View.OnClickListener() {
-            private ObjectAnimator animator;
+        //private ObjectAnimator animator;
+        zoomOut.setOnClickListener(v -> {
+            if (layoutImagens.getScaleX() >= 0.125) {
+                layoutImagens.setScaleX(layoutImagens.getScaleX() * 0.5f);
+                layoutImagens.setScaleY(layoutImagens.getScaleY() * 0.5f);
+                System.out.println(layoutImagens.getScaleX());
+                System.out.println(layoutImagens.getScaleY());
 
-            @Override
-            public void onClick(View v) {
-                if (layoutImagens.getScaleX() >= 0.125) {
-                    layoutImagens.setScaleX(layoutImagens.getScaleX() * 0.5f);
-                    layoutImagens.setScaleY(layoutImagens.getScaleY() * 0.5f);
-                    System.out.println(layoutImagens.getScaleX());
-                    System.out.println(layoutImagens.getScaleY());
+                if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
+                    isZooming = true;
+                    permitirArrasto = true;
+                    restaurarTamanho.setVisibility(View.VISIBLE);
+                    esconderIcones();
 
-                    if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
-                        isZooming = true;
-                        permitirArrasto = true;
-                        restaurarTamanho.setVisibility(View.VISIBLE);
-                        esconderIcones();
+                } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1) {
+                    restaurarTamanho.setVisibility(View.GONE);
+                    layoutImagens.setTranslationX(0);
+                    layoutImagens.setTranslationY(0);
+                    permitirArrasto = true;
+                    isZooming = false;
+                    voltarIconesAparecer();
 
-                    } else if (layoutImagens.getScaleX() == 1 || layoutImagens.getScaleY() == 1) {
-                        restaurarTamanho.setVisibility(View.GONE);
-                        layoutImagens.setTranslationX(0);
-                        layoutImagens.setTranslationY(0);
-                        permitirArrasto = true;
-                        isZooming = false;
-                        voltarIconesAparecer();
-
-                    } else {
-                        isZooming = true;
-                        permitirArrasto = false;
-                        restaurarTamanho.setVisibility(View.VISIBLE);
-                        layoutImagens.setTranslationX(0);
-                        layoutImagens.setTranslationY(0);
-                    }
+                } else {
+                    isZooming = true;
+                    permitirArrasto = false;
+                    restaurarTamanho.setVisibility(View.VISIBLE);
+                    layoutImagens.setTranslationX(0);
+                    layoutImagens.setTranslationY(0);
                 }
             }
         });
 
-        restaurarTamanho.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                voltarAoNormalTamanhoETransaltion();
-            }
-        });
+        restaurarTamanho.setOnClickListener(v -> voltarAoNormalTamanhoETransaltion());
 
         settings = getSharedPreferences(PREFS_NAME, 0);
 
         // Recuperar a lista de exclusão salva
         switchBackup = findViewById(R.id.switchBackup);
-        Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<String>());
-        if (switchBackup.isChecked()){
+        Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<>());
+        if (switchBackup.isChecked()) {
             for (String uriString : exclusionList) {
                 Uri uri = Uri.parse(uriString);
                 DocumentFile file = DocumentFile.fromSingleUri(this, uri);
@@ -394,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
         } else {
             listaDeExclusao.clear();
-            exclusionList.clear();
+            //exclusionList.clear();
         }
 
         numeroLixeira = findViewById(R.id.numero_lixeira);
@@ -403,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         layoutImagens.setOnTouchListener(new View.OnTouchListener() {
             private ObjectAnimator animator;
-            private boolean isAnimating = false;
+            boolean isAnimating = false;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -412,11 +370,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_MOVE:
                             float currentX = event.getX();
-                            float deltaX = (currentX - x1) * 1f + currentTranslationX;
+                            //estava (currentX - x1) * 1f + currentTranslationX; esse f poderia acelerar o arrasto, mas não funcionou
+                            float deltaX = (currentX - x1) + currentTranslationX;
                             layoutImagens.setTranslationX(deltaX);
 
                             float currentY = event.getY();
-                            float deltaY = (currentY - y1) * 1f + currentTranslationY;
+                            float deltaY = (currentY - y1) + currentTranslationY;
                             layoutImagens.setTranslationY(deltaY);
                             break;
                         case MotionEvent.ACTION_DOWN:
@@ -430,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     }
                     return true;
                 }
-                if (permitirArrasto){
+                if (permitirArrasto) {
                     System.out.println("Ta fora do isZooming");
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_MOVE:
@@ -489,15 +448,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     // Aqui você pode adicionar o código para detectar o pressionamento longo
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         // Inicia o pressionamento longo
-                        v.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Aqui você pode adicionar o código para tornar os ícones mais transparentes
-                                System.out.println("Segurando o dedo no layout");
-                                constraintIconesCima = findViewById(R.id.constraint_icones_cima);
-                                constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+                        v.postDelayed(() -> {
+                            // Aqui você pode adicionar o código para tornar os ícones mais transparentes
+                            System.out.println("Segurando o dedo no layout");
+                            constraintIconesCima = findViewById(R.id.constraint_icones_cima);
+                            constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
 
-                            }
                         }, ViewConfiguration.getLongPressTimeout());
                     } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                         // Cancela o pressionamento longo
@@ -508,7 +464,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                     return true;
                 }
-                    return true;
+                return true;
 
 
             }
@@ -541,21 +497,18 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     private void showPermissionExplanationDialog() {
         new AlertDialog.Builder(this)
                 .setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
-                    }
-                })
+                .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS))
                 .create()
                 .show();
     }
 
+    //toda vez que saveExclusionList é chamado, o backup se atualiza com a listaDeExclusao
     Set<String> exclusionList = new LinkedHashSet<>();
+
     private void saveExclusionList() {
         switchBackup = findViewById(R.id.switchBackup);
-        if (switchBackup.isChecked()){
-
+        if (switchBackup.isChecked()) {
+            exclusionList.clear();
             for (DocumentFile file : listaDeExclusao) {
                 exclusionList.add(file.getUri().toString());
             }
@@ -588,20 +541,20 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
         if (!arquivoJaExcluido) {
             listaDeExclusao.add(0, arquivoAtual.get());
-            saveExclusionList();
             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
             System.out.println(arquivoAtual.get().getUri());
         }
-
+        saveExclusionList();
         System.out.println("Clicou no botao de excluir");
         System.out.println(listaDeExclusao);
     }
 
-    public void guardandoArquivo(){
+    public void guardandoArquivo() {
         for (DocumentFile arquivoExcluido : listaDeExclusao) {
             if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
                 System.out.println("Já tem");
                 listaDeExclusao.remove(arquivoExcluido);
+                saveExclusionList();
                 numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
                 System.out.println(arquivoExcluido.getUri());
                 break;
@@ -656,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         constraintIconesBaixo.setVisibility(View.VISIBLE);
                         zoomIn.setVisibility(View.VISIBLE);
                         zoomOut.setVisibility(View.VISIBLE);
-                        exibirImagemPastaSelecionada(data.getData(), 1);
+                        exibirImagemPastaSelecionada(data.getData());
                     }
                 }
             });
@@ -678,6 +631,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         return super.dispatchTouchEvent(evento);
     }
 
+    //Criada para cuidar com a sobreposição de pastas que não foram finalizadas
     @Override
     public void onPastaCimaSelecionadosClicked() {
         if (!pastaJaFoiSelecionada) {
@@ -697,7 +651,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     public void selecionarPasta() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        //startActivityForResult(intent, REQUEST_CODE_OPEN_FOLDER);
         arrayDeArquivos = null;
         selecionarPastaLauncher.launch(intent);
     }
@@ -709,23 +662,20 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     AtomicInteger resultado = new AtomicInteger(0);
     int voltador = 0;
 
-    //int quantidadeApagadas = 0;
-    private void exibirImagemPastaSelecionada(Uri pastaSelecionada, int quantidadeDeImagens) {
+    //Controla e ordena os arquivos da pasta
+    private void exibirImagemPastaSelecionada(Uri pastaSelecionada) {
+        int quantidadeDeImagens = 1;
         if (pastaSelecionada != null) {
             System.out.println("Ta dentro da função exibirImagemPastaSelecionada");
             DocumentFile arquivos = DocumentFile.fromTreeUri(this, pastaSelecionada);
+            assert arquivos != null;
             DocumentFile[] listaDeArquivos = arquivos.listFiles();
 
             arrayDeArquivos = listaDeArquivos;
             tamanhoDaLista = listaDeArquivos.length;
 
             //Ordena a listaDeArquivos do último modificado ao primeiro (pastas ficam no fim)
-            Arrays.sort(listaDeArquivos, new Comparator<DocumentFile>() {
-                @Override
-                public int compare(DocumentFile file1, DocumentFile file2) {
-                    return Long.compare(file2.lastModified(), file1.lastModified());
-                }
-            });
+            Arrays.sort(listaDeArquivos, (file1, file2) -> Long.compare(file2.lastModified(), file1.lastModified()));
 
             System.out.println("Acabou de selecionar a pasta");
             pastaJaFoiSelecionada = true;
@@ -741,7 +691,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             View.OnClickListener onClickListener = v -> {
                 if (v.getId() == R.id.negar_imagem) {
                     excluindoArquivo();
-                } else if (v.getId() == R.id.aceitar_imagem){
+                } else if (v.getId() == R.id.aceitar_imagem) {
                     guardandoArquivo();
                 } else if (v.getId() == R.id.voltar_imagem) {
                     int indexImagemAnterior = imagensCarregadas - 2;
@@ -785,7 +735,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             botaoExcluir.setOnClickListener(onClickListener);
             botaoVoltar.setOnClickListener(onClickListener);
 
-            if (arquivos != null && arquivos.length() > 0) {
+            if (arquivos.length() > 0) {
                 layoutPastaCentral.setVisibility(View.GONE);
                 continuarLoop(quantidadeDeImagens, voltador);
             }
@@ -823,11 +773,26 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     SeekBar seekBar;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
+    //Feito para atualizar a bolinha do player de áudio
     private final Runnable updateSeekBarRunnable = new Runnable() {
         @Override
         public void run() {
             if (mediaPlayer != null) {
                 seekBar.setProgress(mediaPlayer.getCurrentPosition());
+
+                // Atualizar o TextView com o tempo percorrido
+                int duracao = mediaPlayer.getCurrentPosition();
+                int segundos = (duracao / 1000) % 60;
+                int minutos = (duracao / (1000 * 60)) % 60;
+                int horas = (duracao / (1000 * 60 * 60)) % 24;
+                String textoAudioTempoAtual;
+                if (horas > 0) {
+                    textoAudioTempoAtual = String.format("%02d:%02d:%02d", horas, minutos, segundos);
+                } else {
+                    textoAudioTempoAtual = String.format("%02d:%02d", minutos, segundos);
+                }
+                tempoAudioPercorrido.setText(textoAudioTempoAtual);
+
                 handler.postDelayed(this, 200);
             }
         }
@@ -843,8 +808,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     ConstraintLayout extensaoDesconhecida;
     TextView textoNomeArquivo;
     TextView textoAviso;
+    TextView nomeAudio;
+    TextView tempoAudioMaximo;
+    TextView tempoAudioPercorrido;
 
-
+    //Toda vez que apertar um botão ou selecionar uma pasta, continuaLoop é chamado
     private void continuarLoop(int quantidadeDeImagens, int ajuste) {
 
         autoplaySwitch = findViewById(R.id.switchAutoPlay);
@@ -855,10 +823,14 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         textoAviso = findViewById(R.id.texto_aviso);
         zoomIn = findViewById(R.id.zoom_in);
         zoomOut = findViewById(R.id.zoom_out);
+        numeroLixeira = findViewById(R.id.numero_lixeira);
+        tempoAudioMaximo = findViewById(R.id.tempo_audio_maximo);
+        tempoAudioPercorrido = findViewById(R.id.tempo_audio_percorrido);
 
         iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
         botaoAvancar = findViewById(R.id.aceitar_imagem);
         botaoExcluir = findViewById(R.id.negar_imagem);
+        nomeAudio = findViewById(R.id.nome_audio);
 
         botaoVoltar.setVisibility(View.VISIBLE);
         iconeMaisImagens.setVisibility(View.VISIBLE);
@@ -871,24 +843,20 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
 
         voltarIconesAparecer();
+        numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
 
+        //Para não sobrecarregar com quantidade de imagens, ele carrega apenas a atual
         for (int i = imagensCarregadas + voltador; i < imagensCarregadas + quantidadeDeImagens && i < tamanhoDaLista; i++) {
-            //for (DocumentFile arquivo : listaDeArquivos) {
 
             resetouPasta = false;
-            System.out.println("i = " + i);
-            System.out.println("Voltador = " + voltador);
-
             DocumentFile arquivo = arrayDeArquivos[i];
-
             String caminhoArquivo = arquivo.getUri().toString();
-
             String extensao = arquivo.getName();
 
             System.out.println(extensao);
 
 
-            if (arquivo.getType() != null) {
+            if (arquivo.getType() != null && extensao != null) {
                 if (isImagem(extensao)) {
                     imageView.setVisibility(View.VISIBLE);
                     videoView.setVisibility(View.GONE);
@@ -934,12 +902,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                             if (mediaPlayer == null) {
                                 mediaPlayer = new MediaPlayer();
-                                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                    @Override
-                                    public void onPrepared(MediaPlayer mp) {
-                                        seekBar.setMax(mediaPlayer.getDuration());
-                                        handler.post(updateSeekBarRunnable);
-                                    }
+                                mediaPlayer.setOnPreparedListener(mp -> {
+                                    seekBar.setMax(mediaPlayer.getDuration());
+                                    handler.post(updateSeekBarRunnable);
                                 });
                             } else {
                                 mediaPlayer.reset();
@@ -948,45 +913,56 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             mediaPlayer.setDataSource(fileDescriptor);
                             mediaPlayer.prepareAsync();
 
+                            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                            mmr.setDataSource(this, arquivo.getUri());
+                            String title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+                            //String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+                            //nomeAudio.setText(arquivo.getName());
+                            nomeAudio.setText(title);
+
                             playButton = findViewById(R.id.play_button);
                             pauseButton = findViewById(R.id.pause_button);
                             seekBar = findViewById(R.id.seek_bar);
 
-                            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                @Override
-                                public void onPrepared(MediaPlayer mp) {
-                                    seekBar.setMax(mediaPlayer.getDuration());
-                                    System.out.println(mediaPlayer.getDuration());
-                                    handler.post(updateSeekBarRunnable);
+                            playButton.setVisibility(View.VISIBLE);
+                            pauseButton.setVisibility(View.GONE);
 
-                                    if (autoplaySwitch.isChecked()) {
-                                        mediaPlayer.start();
-                                        playButton.setVisibility(View.GONE);
-                                        pauseButton.setVisibility(View.VISIBLE);
-                                    } else {
-                                        mediaPlayer.pause();
-                                        playButton.setVisibility(View.VISIBLE);
-                                        pauseButton.setVisibility(View.GONE);
-                                    }
+                            mediaPlayer.setOnPreparedListener(mp -> {
+                                int duracao = mediaPlayer.getDuration();
+                                int segundos = (duracao / 1000) % 60;
+                                int minutos = (duracao / (1000 * 60)) % 60;
+                                int horas = (duracao / (1000 * 60 * 60)) % 24;
+                                String textoTempoDuracaoTotal;
+                                if (horas > 0) {
+                                    textoTempoDuracaoTotal = String.format("%02d:%02d:%02d", horas, minutos, segundos);
+                                } else {
+                                    textoTempoDuracaoTotal = String.format("%02d:%02d", minutos, segundos);
                                 }
-                            });
+                                tempoAudioMaximo.setText(textoTempoDuracaoTotal);
 
-                            playButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
+                                seekBar.setMax(mediaPlayer.getDuration());
+                                System.out.println(mediaPlayer.getDuration());
+                                handler.post(updateSeekBarRunnable);
+
+                                if (autoplaySwitch.isChecked()) {
                                     mediaPlayer.start();
+                                    System.out.println("Play automatico");
                                     playButton.setVisibility(View.GONE);
                                     pauseButton.setVisibility(View.VISIBLE);
                                 }
                             });
 
-                            pauseButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    mediaPlayer.pause();
-                                    playButton.setVisibility(View.VISIBLE);
-                                    pauseButton.setVisibility(View.GONE);
-                                }
+                            playButton.setOnClickListener(v -> {
+                                mediaPlayer.start();
+                                playButton.setVisibility(View.GONE);
+                                pauseButton.setVisibility(View.VISIBLE);
+                            });
+
+                            pauseButton.setOnClickListener(v -> {
+                                mediaPlayer.pause();
+                                playButton.setVisibility(View.VISIBLE);
+                                pauseButton.setVisibility(View.GONE);
                             });
 
                             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -1042,7 +1018,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             arquivoAtual.set(arquivo);
             resultado.set(0);
             ajuste = resultado.get();
-            //i += voltador;
             voltador = 0;
         }
 
