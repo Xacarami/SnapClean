@@ -37,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.MediaController;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -52,6 +53,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -122,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //hello = findViewById(R.id.hello);
 
+        //Já garante a permissão de primeira
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -341,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
 
         settings = getSharedPreferences(PREFS_NAME, 0);
 
-        // Recuperar a lista de exclusão salva
+        // Recuperar a lista de exclusão salva, transforma de uri para arquivo
         switchBackup = findViewById(R.id.switchBackup);
         Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<>());
         if (switchBackup.isChecked()) {
@@ -352,7 +356,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             listaDeExclusao.clear();
-            //exclusionList.clear();
         }
 
         numeroLixeira = findViewById(R.id.numero_lixeira);
@@ -472,6 +475,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Gerencia a permissão de visualizar e escrever os arquivos do usuário
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -512,14 +516,7 @@ public class MainActivity extends AppCompatActivity {
             for (DocumentFile file : listaDeExclusao) {
                 exclusionList.add(file.getUri().toString());
             }
-/*
-            for(DocumentFile file : listaDeExclusao){
-                System.out.println("listaDeExclusao -> "+file.getName());
-            }
-            for(String file : exclusionList){
-                System.out.println("exclusionList -> "+file);
-            }
- */
+
             SharedPreferences.Editor editor = settings.edit();
             editor.putStringSet(PREF_EXCLUSION_LIST, exclusionList);
             editor.apply();
@@ -574,7 +571,7 @@ public class MainActivity extends AppCompatActivity {
         voltarIconesAparecer();
     }
 
-
+    //Apenas uma mensagem padrão para algo que ainda não foi implementado
     public void colocarToast() {
         Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
     }
@@ -584,11 +581,8 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(requestCode);
         System.out.println(resultCode);
         if (requestCode == REQUEST_CODE_OPEN_FOLDER && resultCode == Activity.RESULT_OK) {
-            System.out.println("dentro de onActivityResult o primeiro if passou");
             if (data != null && data.getData() != null) {
-
                 pastaSelecionada = data.getData();
-                System.out.println("uma linha antes de chamar a função exibirImagem");
             }
         }
     }
@@ -631,24 +625,6 @@ public class MainActivity extends AppCompatActivity {
         return super.dispatchTouchEvent(evento);
     }
 
-    //Criada para cuidar com a sobreposição de pastas que não foram finalizadas
-    /*
-    @Override
-    public void onPastaCimaSelecionadosClicked() {
-        if (!pastaJaFoiSelecionada) {
-            selecionarPasta();
-            System.out.println(listaDeExclusao);
-        } else {
-            resetouPasta = true;
-            imagensCarregadas = 0;
-            selecionarPasta();
-            System.out.println("Pasta ja selecionada, e clicou em abrir mais uma");
-
-        }
-    }
-
-     */
-
     DocumentFile[] arrayDeArquivos;
 
     public void selecionarPasta() {
@@ -658,92 +634,140 @@ public class MainActivity extends AppCompatActivity {
         selecionarPastaLauncher.launch(intent);
     }
 
-
     int tamanhoDaLista;
 
     AtomicReference<DocumentFile> arquivoAtual = new AtomicReference<>();
     AtomicInteger resultado = new AtomicInteger(0);
     int voltador = 0;
+    TextView carregado;
+    int seila = 0;
+    DocumentFile arquivos;
 
     //Controla e ordena os arquivos da pasta
     private void exibirImagemPastaSelecionada(Uri pastaSelecionada) {
+
         int quantidadeDeImagens = 1;
+        carregado = findViewById(R.id.carregado);
         if (pastaSelecionada != null) {
-            System.out.println("Ta dentro da função exibirImagemPastaSelecionada");
-            DocumentFile arquivos = DocumentFile.fromTreeUri(this, pastaSelecionada);
+
+            arquivos = DocumentFile.fromTreeUri(this, pastaSelecionada);
+
             assert arquivos != null;
-            DocumentFile[] listaDeArquivos = arquivos.listFiles();
+            DocumentFile[] listaDeArquivos;
+            listaDeArquivos = arquivos.listFiles();
 
             arrayDeArquivos = listaDeArquivos;
             tamanhoDaLista = listaDeArquivos.length;
 
             //Ordena a listaDeArquivos do último modificado ao primeiro (pastas ficam no fim)
-            Arrays.sort(listaDeArquivos, (file1, file2) -> Long.compare(file2.lastModified(), file1.lastModified()));
 
             System.out.println("Acabou de selecionar a pasta");
             pastaJaFoiSelecionada = true;
 
-            imageView = findViewById(R.id.view_imagem);
-            videoView = findViewById(R.id.view_video);
-            botaoAvancar = findViewById(R.id.aceitar_imagem);
-            botaoExcluir = findViewById(R.id.negar_imagem);
-            botaoVoltar = findViewById(R.id.voltar_imagem);
-            layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
-            numeroLixeira = findViewById(R.id.numero_lixeira);
+            AlertDialog.Builder builderDois = new AlertDialog.Builder(this);
+            builderDois.setTitle("Ordenar arquivos");
+            builderDois.setMessage("Deseja ordenar os arquivos por data de modificação?\n\nCaso não, carregará instantâneamente!");
+            builderDois.setPositiveButton("Sim", (dialog, which) -> {
+                // Criar e exibir o ProgressBar
+                ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+                progressBar.setMax(tamanhoDaLista * 7);
 
-            View.OnClickListener onClickListener = v -> {
-                if (v.getId() == R.id.negar_imagem) {
-                    excluindoArquivo();
-                } else if (v.getId() == R.id.aceitar_imagem) {
-                    guardandoArquivo();
-                } else if (v.getId() == R.id.voltar_imagem) {
-                    int indexImagemAnterior = imagensCarregadas - 2;
-                    if (indexImagemAnterior >= 0) {
-                        DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];
-                        int indexArquivoExcluido = -1;
-                        for (int i = 0; i < listaDeExclusao.size(); i++) {
-                            DocumentFile arquivoExcluido = listaDeExclusao.get(i);
-                            if (arquivoExcluido.getUri().equals(imagemAnterior.getUri())) {
-                                indexArquivoExcluido = i;
-                                break;
-                            }
-                        }
-                        if (indexArquivoExcluido != -1) {
-                            listaDeExclusao.remove(indexArquivoExcluido);
-                            saveExclusionList();
-                            numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-                        }
-                    }
-                    if (imagensCarregadas > 1) {
-                        resultado.set(-2);
-                        voltador = -2;
-                    } else if (imagensCarregadas <= 1) {
-                        resultado.set(-1);
-                        voltador = -1;
-                    }
-                    System.out.println("Clicou no botao de voltar");
-                    iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
-                    botaoAvancar = findViewById(R.id.aceitar_imagem);
-                    botaoExcluir = findViewById(R.id.negar_imagem);
+                // Ordenar a lista de arquivos
+                Handler handler = new Handler(Looper.getMainLooper());
+                Executor executor = Executors.newSingleThreadExecutor();
 
-                    layoutPastaCentral.setVisibility(View.GONE);
-                    iconeMaisImagens.setVisibility(View.VISIBLE);
-                    botaoAvancar.setVisibility(View.VISIBLE);
-                    botaoExcluir.setVisibility(View.VISIBLE);
-                }
-                continuarLoop(quantidadeDeImagens + voltador, resultado.get());
-            };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Ordenando arquivos");
+                builder.setMessage("Aguarde enquanto os arquivos são ordenados...");
+                builder.setView(progressBar);
+                AlertDialog dialogo = builder.create();
+                dialogo.show();
 
-            botaoAvancar.setOnClickListener(onClickListener);
-            botaoExcluir.setOnClickListener(onClickListener);
-            botaoVoltar.setOnClickListener(onClickListener);
+                executor.execute(() -> {
 
-            if (arquivos.length() > 0) {
-                layoutPastaCentral.setVisibility(View.GONE);
-                continuarLoop(quantidadeDeImagens, voltador);
-            }
+                    // Ordenar a lista de arquivos
+                    Arrays.sort(listaDeArquivos, (file1, file2) -> {
+                        handler.post(() -> progressBar.incrementProgressBy(1));
+                        return Long.compare(file2.lastModified(), file1.lastModified());
+                    });
+
+                    handler.post(() -> {
+                        dialogo.dismiss();
+                        mostrarArquivosManipulaveis();
+                    });
+                });
+            });
+            builderDois.setNegativeButton("Não", (dialog, which) -> {
+                // Coloque aqui o código que deve ser executado se o usuário escolher não ordenar os arquivos
+                mostrarArquivosManipulaveis();
+            });
+            builderDois.show();
+
         }
     }
+
+    public void mostrarArquivosManipulaveis(){
+        imageView = findViewById(R.id.view_imagem);
+        videoView = findViewById(R.id.view_video);
+        botaoAvancar = findViewById(R.id.aceitar_imagem);
+        botaoExcluir = findViewById(R.id.negar_imagem);
+        botaoVoltar = findViewById(R.id.voltar_imagem);
+        layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
+        numeroLixeira = findViewById(R.id.numero_lixeira);
+
+        View.OnClickListener onClickListener = v -> {
+            if (v.getId() == R.id.negar_imagem) {
+                excluindoArquivo();
+            } else if (v.getId() == R.id.aceitar_imagem) {
+                guardandoArquivo();
+            } else if (v.getId() == R.id.voltar_imagem) {
+                int indexImagemAnterior = imagensCarregadas - 2;
+                if (indexImagemAnterior >= 0) {
+                    DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];
+                    int indexArquivoExcluido = -1;
+                    for (int i = 0; i < listaDeExclusao.size(); i++) {
+                        DocumentFile arquivoExcluido = listaDeExclusao.get(i);
+                        if (arquivoExcluido.getUri().equals(imagemAnterior.getUri())) {
+                            indexArquivoExcluido = i;
+                            break;
+                        }
+                    }
+                    if (indexArquivoExcluido != -1) {
+                        listaDeExclusao.remove(indexArquivoExcluido);
+                        saveExclusionList();
+                        numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
+                    }
+                }
+                if (imagensCarregadas > 1) {
+                    resultado.set(-2);
+                    voltador = -2;
+                } else if (imagensCarregadas <= 1) {
+                    resultado.set(-1);
+                    voltador = -1;
+                }
+                System.out.println("Clicou no botao de voltar");
+                iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
+                botaoAvancar = findViewById(R.id.aceitar_imagem);
+                botaoExcluir = findViewById(R.id.negar_imagem);
+
+                layoutPastaCentral.setVisibility(View.GONE);
+                iconeMaisImagens.setVisibility(View.VISIBLE);
+                botaoAvancar.setVisibility(View.VISIBLE);
+                botaoExcluir.setVisibility(View.VISIBLE);
+            }
+            continuarLoop(1 + voltador, resultado.get());
+        };
+
+        botaoAvancar.setOnClickListener(onClickListener);
+        botaoExcluir.setOnClickListener(onClickListener);
+        botaoVoltar.setOnClickListener(onClickListener);
+
+        if (arquivos.length() > 0) {
+            layoutPastaCentral.setVisibility(View.GONE);
+            continuarLoop(1, voltador);
+        }
+    }
+
 
     private ObjectAnimator animator;
 
