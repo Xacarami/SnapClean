@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -87,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     Boolean resetouPasta = false;
     private final ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
     FrameLayout layoutImagens;
-    ConstraintLayout layoutPrincipal;
     ConstraintLayout constraintIconesCima;
     ImageButton iconeMaisImagens;
     Switch switchBackup;
@@ -123,6 +123,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //hello = findViewById(R.id.hello);
+
+        //muda a cor da barra de status
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        getWindow().setStatusBarColor(Color.parseColor("#161618"));
+        //}
 
         //Já garante a permissão de primeira
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -352,12 +357,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 System.out.println(uriString);
                 Uri uri = Uri.parse(uriString);
                 DocumentFile file = DocumentFile.fromSingleUri(this, uri);
-                System.out.println("File -> "+file.exists());
-                if (file.exists()){
+                if (file.exists()) {
                     listaDeExclusao.add(0, file);
-                } else {
-                    continue;
-                };
+                }
             }
         } else {
             listaDeExclusao.clear();
@@ -435,20 +437,17 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                     public void onAnimationEnd(Animator animation) {
                                         isAnimating = false;
                                         layoutImagens.setTranslationX(0);
-                                        continuarLoop(1 + voltador, resultado.get());
+                                        continuarLoop(quantidadeDeImagens + voltador, resultado.get());
                                     }
                                 });
-                                animator.start();
-                                isAnimating = true;
-                                voltarIconesAparecer();
                             } else {
                                 // Deslizou menos que MIN_DISTANCE, então volta para o centro
                                 animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", 0);
                                 animator.setDuration(200);
-                                animator.start();
-                                isAnimating = true;
-                                voltarIconesAparecer();
                             }
+                            animator.start();
+                            isAnimating = true;
+                            voltarIconesAparecer();
                             break;
                     }
                     v.performClick();
@@ -469,15 +468,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         voltarIconesAparecer();
                         v.removeCallbacks(null);
                     }
-
                     return true;
                 }
                 return true;
-
-
             }
         });
-
     }
 
     //Gerencia a permissão de visualizar e escrever os arquivos do usuário
@@ -617,13 +612,13 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     TextView cuidadoPastaRaiz;
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                System.out.println("PASTA -> "+result.getData());
+                System.out.println("PASTA -> " + result.getData());
                 cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
                 layoutImagens = findViewById(R.id.layout_imagens);
                 constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
                 layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
                 //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
-                if (result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")){
+                if (result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
                     cuidadoPastaRaiz.setVisibility(View.VISIBLE);
                     layoutImagens.setVisibility(View.GONE);
                     constraintIconesBaixo.setVisibility(View.GONE);
@@ -687,13 +682,12 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     AtomicInteger resultado = new AtomicInteger(0);
     int voltador = 0;
     TextView carregado;
-    int seila = 0;
     DocumentFile arquivos;
+    int quantidadeDeImagens = 1;
 
     //Controla e ordena os arquivos da pasta
     private void exibirImagemPastaSelecionada(Uri pastaSelecionada) {
 
-        int quantidadeDeImagens = 1;
         carregado = findViewById(R.id.carregado);
         if (pastaSelecionada != null) {
 
@@ -753,7 +747,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
-    public void mostrarArquivosManipulaveis(){
+    public void mostrarArquivosManipulaveis() {
         imageView = findViewById(R.id.view_imagem);
         videoView = findViewById(R.id.view_video);
         botaoAvancar = findViewById(R.id.aceitar_imagem);
@@ -788,7 +782,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 if (imagensCarregadas > 1) {
                     resultado.set(-2);
                     voltador = -2;
-                } else if (imagensCarregadas <= 1) {
+                } else {
                     resultado.set(-1);
                     voltador = -1;
                 }
@@ -802,7 +796,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 botaoAvancar.setVisibility(View.VISIBLE);
                 botaoExcluir.setVisibility(View.VISIBLE);
             }
-            continuarLoop(1 + voltador, resultado.get());
+            continuarLoop(quantidadeDeImagens + voltador, resultado.get());
         };
 
         botaoAvancar.setOnClickListener(onClickListener);
@@ -811,7 +805,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         if (arquivos.length() > 0) {
             layoutPastaCentral.setVisibility(View.GONE);
-            continuarLoop(1, voltador);
+            continuarLoop(quantidadeDeImagens, voltador);
         }
     }
 

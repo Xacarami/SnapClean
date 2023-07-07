@@ -47,16 +47,14 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     private boolean todasSelecionadas = false;
 
 
-    public SelecionadosFragment(ArrayList<DocumentFile> listaDeExclusao){
+    public SelecionadosFragment(ArrayList<DocumentFile> listaDeExclusao) {
         this.listaDeExclusao = listaDeExclusao;
     }
 
     SelecionadosViewModel viewModel;
-    private Button botaoRecuperar;
-    private Button botaoApagarTudo;
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(SelecionadosViewModel.class);
     }
@@ -73,12 +71,14 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     }
 
     private ImagemAdapter adapter;
+    String textificandoTotal;
+
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        botaoRecuperar = view.findViewById(R.id.botao_recuperar);
-        botaoApagarTudo = view.findViewById(R.id.botao_apagar);
+        Button botaoRecuperar = view.findViewById(R.id.botao_recuperar);
+        Button botaoApagarTudo = view.findViewById(R.id.botao_apagar);
 
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
@@ -89,7 +89,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
 
         quantidadeTotal = getView().findViewById(R.id.quantidade_total);
-        String textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+        textificandoTotal = "Quantidade: " + listaDeExclusao.size();
         quantidadeTotal.setText(textificandoTotal);
 
         ImageButton selecionador = view.findViewById(R.id.selecionador);
@@ -115,7 +115,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
                 System.out.println("SIM");
                 ArrayList<DocumentFile> listaDeSelecionados = adapter.getListaDeSelecionados();
-                for (DocumentFile recuperado : listaDeSelecionados){
+                for (DocumentFile recuperado : listaDeSelecionados) {
                     listaDeExclusao.remove(recuperado);
                     atualizarListaDeExclusao(listaDeExclusao);
                     if (listener != null) {
@@ -125,7 +125,8 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                     }
                 }
                 adapter.desselecionarTodas();
-                quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+                textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                quantidadeTotal.setText(textificandoTotal);
             });
             builder.setNegativeButton("Não", (dialog, which) -> {
                 // Usuário escolheu não recuperar as imagens
@@ -136,7 +137,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         botaoApagarTudo.setOnClickListener(v -> {
             System.out.println("Botao Apagar");
 
-            if (adapter.getListaDeSelecionados().size() > 0){
+            if (adapter.getListaDeSelecionados().size() > 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setTitle("Apagar arquivos selecionados");
                 builder.setMessage("Tem certeza de que deseja apagar os arquivos selecionados?\nOs aquivos não poderão ser recuperados depois!");
@@ -154,7 +155,8 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         listener.onArquivoRecuperado(null);
                     }
                     adapter.desselecionarTodas();
-                    quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+                    textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                    quantidadeTotal.setText(textificandoTotal);
                 });
 
                 builder.setNegativeButton("Não", (dialog, which) -> {
@@ -186,7 +188,8 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                             listener.onArquivoRecuperado(null);
                         }
                         adapter.desselecionarTodas();
-                        quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+                        textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                        quantidadeTotal.setText(textificandoTotal);
                     });
                     builderGarantia.setNegativeButton("Não", (dialogo, whichh) -> {
                         // Usuário escolheu não apagar todas as imagens
@@ -206,7 +209,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         //inflar o layout do fragment
         View rootView = inflater.inflate(R.layout.fragment_selecionados, container, false);
@@ -226,15 +229,16 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     }
 
 
-        //passar lista atualizada para a main
+    //passar lista atualizada para a main
     public interface OnArquivoRecuperadoListener {
         void onArquivoRecuperado(DocumentFile arquivo);
     }
+
     private OnArquivoRecuperadoListener listener;
+
     public void setOnArquivoRecuperadoListener(OnArquivoRecuperadoListener listener) {
         this.listener = listener;
     }
-
 
 
     private boolean isImagem(String extensao) {
@@ -331,10 +335,10 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
             selecionador.setVisibility(View.VISIBLE);
             voltarSelecionados.setVisibility(View.VISIBLE);
             setaBaixo.setVisibility(View.GONE);
-            if(mediaPlayer != null){
+            if (mediaPlayer != null) {
                 mediaPlayer.pause();
             }
-            if (videoView != null){
+            if (videoView != null) {
                 videoView.pause();
             }
         });
@@ -491,7 +495,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         }
     }
 
-    public void atualizarListaDeExclusao(ArrayList<DocumentFile> listaDeExclusao){
+    public void atualizarListaDeExclusao(ArrayList<DocumentFile> listaDeExclusao) {
         this.listaDeExclusao = listaDeExclusao;
         adapter.notifyDataSetChanged();
     }

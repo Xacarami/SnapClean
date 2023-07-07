@@ -17,18 +17,18 @@ import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder> {
-    private ArrayList<DocumentFile> listaDeExclusao;
-    private ArrayList<DocumentFile> listaDeSelecionados = new ArrayList<>();
+    private final ArrayList<DocumentFile> listaDeExclusao;
+    private final ArrayList<DocumentFile> listaDeSelecionados = new ArrayList<>();
 
     public interface OnItemClickListener {
         void onImagemClicked(DocumentFile imagem);
+
         void onBotaoImagemClicked(DocumentFile imagem);
     }
 
-    public ArrayList<DocumentFile> getListaDeSelecionados(){
+    public ArrayList<DocumentFile> getListaDeSelecionados() {
         return listaDeSelecionados;
     }
 
@@ -62,14 +62,14 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     }
 
 
-    private OnItemClickListener listener;
+    private final OnItemClickListener listener;
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         ImageView iconeSelecao;
         ImageButton botaoImagem;
 
-        public ViewHolder(@NonNull View itemView){
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imagem);
             iconeSelecao = itemView.findViewById(R.id.icone_selecao);
@@ -77,7 +77,7 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         }
     }
 
-    public ImagemAdapter(ArrayList<DocumentFile> listaDeExclusao, OnItemClickListener listener){
+    public ImagemAdapter(ArrayList<DocumentFile> listaDeExclusao, OnItemClickListener listener) {
         this.listaDeExclusao = listaDeExclusao;
         this.listener = listener;
     }
@@ -122,37 +122,34 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         DocumentFile imagem = listaDeExclusao.get(position);
         String caminhoArquivo = imagem.getUri().toString();
         String extensao = imagem.getName();
-        if(isVideo(extensao) || isImagem(extensao)){
-            Glide.with(holder.imageView.getContext())
-                    .load(caminhoArquivo)
-                    .into(holder.imageView);
-        } else if(isAudio(extensao)){
-            Glide.with(holder.imageView.getContext())
-                    .load(R.mipmap.ic_musica)
-                    .into(holder.imageView);
-        } else {
-            Glide.with(holder.imageView.getContext())
-                    .load(R.mipmap.ic_alerta)
-                    .into(holder.imageView);
+        if (extensao != null) {
+            if (isVideo(extensao) || isImagem(extensao)) {
+                Glide.with(holder.imageView.getContext())
+                        .load(caminhoArquivo)
+                        .into(holder.imageView);
+            } else if (isAudio(extensao)) {
+                Glide.with(holder.imageView.getContext())
+                        .load(R.mipmap.ic_musica)
+                        .into(holder.imageView);
+            } else {
+                Glide.with(holder.imageView.getContext())
+                        .load(R.mipmap.ic_alerta)
+                        .into(holder.imageView);
+            }
         }
 
-        holder.botaoImagem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.onBotaoImagemClicked(imagem);
-                }
+
+        holder.botaoImagem.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onBotaoImagemClicked(imagem);
             }
         });
 
 
         // Adiciona um ouvinte de clique à imagem
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.onImagemClicked(imagem);
-                }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onImagemClicked(imagem);
             }
         });
 
@@ -160,17 +157,14 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         holder.itemView.setSelected(listaDeSelecionados.contains(imagem));
 
         // Adiciona um ouvinte de clique à imagem
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listaDeSelecionados.contains(imagem)) {
-                    listaDeSelecionados.remove(imagem);
-                } else {
-                    listaDeSelecionados.add(imagem);
-                }
-                notifyItemChanged(holder.getAdapterPosition());
-                atualizarBotoes();
+        holder.itemView.setOnClickListener(v -> {
+            if (listaDeSelecionados.contains(imagem)) {
+                listaDeSelecionados.remove(imagem);
+            } else {
+                listaDeSelecionados.add(imagem);
             }
+            notifyItemChanged(holder.getAdapterPosition());
+            atualizarBotoes();
         });
         // Define o estado selecionado da imagem
         boolean selecionado = listaDeSelecionados.contains(imagem);
