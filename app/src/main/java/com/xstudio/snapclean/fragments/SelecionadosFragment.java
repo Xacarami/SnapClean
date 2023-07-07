@@ -1,14 +1,17 @@
 package com.xstudio.snapclean.fragments;
 
+import android.app.AlertDialog;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -35,6 +38,7 @@ import com.xstudio.snapclean.R;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnItemClickListener {
     //private List<DocumentFile> listaDeExclusao;
@@ -48,6 +52,8 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     }
 
     SelecionadosViewModel viewModel;
+    private Button botaoRecuperar;
+    private Button botaoApagarTudo;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -71,15 +77,16 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
 
+        botaoRecuperar = view.findViewById(R.id.botao_recuperar);
+        botaoApagarTudo = view.findViewById(R.id.botao_apagar);
+
         RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         adapter = new ImagemAdapter(listaDeExclusao, this);
+        adapter.setBotoes(botaoRecuperar, botaoApagarTudo);
         recyclerView.setAdapter(adapter);
 
         imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
-
-        adapter = new ImagemAdapter(listaDeExclusao, this);
-        recyclerView.setAdapter(adapter);
 
         quantidadeTotal = getView().findViewById(R.id.quantidade_total);
         String textificandoTotal = "Quantidade: " + listaDeExclusao.size();
@@ -94,6 +101,107 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 adapter.selecionarTodas();
                 todasSelecionadas = true;
             }
+        });
+
+        botaoRecuperar = view.findViewById(R.id.botao_recuperar);
+        botaoApagarTudo = view.findViewById(R.id.botao_apagar);
+
+        botaoRecuperar.setOnClickListener(v -> {
+            System.out.println("Recuperar");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("Recuperar imagens");
+            builder.setMessage("Tem certeza de que deseja recuperar as imagens selecionadas?");
+            builder.setPositiveButton("Sim", (dialog, which) -> {
+                // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
+                System.out.println("SIM");
+                ArrayList<DocumentFile> listaDeSelecionados = adapter.getListaDeSelecionados();
+                for (DocumentFile recuperado : listaDeSelecionados){
+                    listaDeExclusao.remove(recuperado);
+                    atualizarListaDeExclusao(listaDeExclusao);
+                    if (listener != null) {
+                        listener.onArquivoRecuperado(recuperado);
+                    } else {
+                        Log.d("SelecionadosFragment", "Listener é nulo");
+                    }
+                }
+                adapter.desselecionarTodas();
+                quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+            });
+            builder.setNegativeButton("Não", (dialog, which) -> {
+                // Usuário escolheu não recuperar as imagens
+            });
+            builder.show();
+        });
+
+        botaoApagarTudo.setOnClickListener(v -> {
+            System.out.println("Botao Apagar");
+
+            if (adapter.getListaDeSelecionados().size() > 0){
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Apagar arquivos selecionados");
+                builder.setMessage("Tem certeza de que deseja apagar os arquivos selecionados?\nOs aquivos não poderão ser recuperados depois!");
+                builder.setPositiveButton("Sim", (dialog, which) -> {
+                    // Usuário escolheu apagar as imagens selecionadas
+                    System.out.println("Apagar mesmo");
+                    for (DocumentFile arquivo : adapter.getListaDeSelecionados()) {
+                        if (arquivo.exists()) {
+                            listaDeExclusao.remove(arquivo);
+                            arquivo.delete();
+                            atualizarListaDeExclusao(listaDeExclusao);
+                        }
+                    }
+                    if (listener != null) {
+                        listener.onArquivoRecuperado(null);
+                    }
+                    adapter.desselecionarTodas();
+                    quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+                });
+
+                builder.setNegativeButton("Não", (dialog, which) -> {
+                    // Usuário escolheu não apagar as imagens selecionadas
+                    System.out.println("Não Apagar");
+                });
+                builder.show();
+
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Apagar Tudo");
+                builder.setMessage("Tem certeza de que deseja apagar TODOS os arquivos?");
+                builder.setPositiveButton("Sim", (dialog, which) -> {
+                    // Usuário escolheu apagar todas as imagens
+                    AlertDialog.Builder builderGarantia = new AlertDialog.Builder(getContext());
+                    builderGarantia.setTitle("ALERTA!");
+                    builderGarantia.setMessage("Os aquivos não poderão ser recuperados depois!");
+                    builderGarantia.setPositiveButton("Sim", (dialogo, whichh) -> {
+                        System.out.println("Apagar Tudo mesmo");
+                        List<DocumentFile> temp = new ArrayList<>(listaDeExclusao);
+                        for (DocumentFile arquivo : temp) {
+                            if (arquivo.exists()) {
+                                listaDeExclusao.remove(arquivo);
+                                arquivo.delete();
+                                atualizarListaDeExclusao(listaDeExclusao);
+                            }
+                        }
+                        if (listener != null) {
+                            listener.onArquivoRecuperado(null);
+                        }
+                        adapter.desselecionarTodas();
+                        quantidadeTotal.setText("Quantidade: " + listaDeExclusao.size());
+                    });
+                    builderGarantia.setNegativeButton("Não", (dialogo, whichh) -> {
+                        // Usuário escolheu não apagar todas as imagens
+                        System.out.println("Não Apagar Tudo");
+                    });
+                    builderGarantia.show();
+                });
+
+                builder.setNegativeButton("Não", (dialog, which) -> {
+                    // Usuário escolheu não apagar todas as imagens
+                    System.out.println("Não Apagar Tudo");
+                });
+                builder.show();
+            }
+
         });
     }
 
@@ -116,6 +224,18 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         });
         return rootView;
     }
+
+
+        //passar lista atualizada para a main
+    public interface OnArquivoRecuperadoListener {
+        void onArquivoRecuperado(DocumentFile arquivo);
+    }
+    private OnArquivoRecuperadoListener listener;
+    public void setOnArquivoRecuperadoListener(OnArquivoRecuperadoListener listener) {
+        this.listener = listener;
+    }
+
+
 
     private boolean isImagem(String extensao) {
         return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg");

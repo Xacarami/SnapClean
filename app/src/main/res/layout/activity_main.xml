@@ -153,9 +153,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="75dp"
-                    android:text="Extensão não suportada"
+                    android:text="Extensão não suportada\nNão recomendamos que exclua."
                     android:textAlignment="center"
-                    android:textColor="#FFECCB"
+                    android:textColor="#FF3030"
+                    android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/alerta_icone" />
@@ -177,9 +178,9 @@
                     android:id="@+id/alerta_icone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:contentDescription="Icone de Alerta"
                     android:scaleX="2.5"
                     android:scaleY="2.5"
-                    android:contentDescription="Icone de Alerta"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -412,6 +413,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <TextView
+            android:id="@+id/cuidado_pasta_raiz"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="25dp"
+            android:layout_marginEnd="25dp"
+            android:text="Tenha cuidado! A pasta raíz foi selecionada, e isso poderia acarretar em um problema interno no aparelho. Selecione uma pasta permitida."
+            android:textAlignment="center"
+            android:textColor="#F44336"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/constraintLayout_PastaCentral"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout_PastaCentral"
             android:layout_width="wrap_content"
@@ -427,8 +442,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="É preciso selecionar uma pasta"
+                android:text="Selecione uma pasta"
                 android:textColor="@android:color/darker_gray"
+                android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/pasta_central" />

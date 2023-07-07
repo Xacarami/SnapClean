@@ -1,8 +1,11 @@
 package com.xstudio.snapclean.fragments;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -24,6 +27,40 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         void onImagemClicked(DocumentFile imagem);
         void onBotaoImagemClicked(DocumentFile imagem);
     }
+
+    public ArrayList<DocumentFile> getListaDeSelecionados(){
+        return listaDeSelecionados;
+    }
+
+    private Button botaoRecuperar;
+
+    private Button botaoApagarTudo;
+
+    public void setBotoes(Button botaoRecuperar, Button botaoApagarTudo) {
+        this.botaoRecuperar = botaoRecuperar;
+        this.botaoApagarTudo = botaoApagarTudo;
+    }
+
+    private void atualizarBotoes() {
+        if (botaoRecuperar != null) {
+            if (listaDeSelecionados.isEmpty()) {
+                botaoRecuperar.setText("Recuperar");
+                botaoRecuperar.setEnabled(false);
+                botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
+            } else {
+                botaoRecuperar.setEnabled(true);
+                botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(0xFF289500));
+            }
+        }
+        if (botaoApagarTudo != null) {
+            if (listaDeSelecionados.isEmpty()) {
+                botaoApagarTudo.setText("Apagar tudo");
+            } else {
+                botaoApagarTudo.setText("Apagar");
+            }
+        }
+    }
+
 
     private OnItemClickListener listener;
 
@@ -50,6 +87,7 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);
+        atualizarBotoes();
         return new ViewHolder(view);
     }
 
@@ -57,11 +95,13 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         listaDeSelecionados.clear();
         listaDeSelecionados.addAll(listaDeExclusao);
         notifyDataSetChanged();
+        atualizarBotoes();
     }
 
     public void desselecionarTodas() {
         listaDeSelecionados.clear();
         notifyDataSetChanged();
+        atualizarBotoes();
     }
 
 
@@ -129,6 +169,7 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
                     listaDeSelecionados.add(imagem);
                 }
                 notifyItemChanged(holder.getAdapterPosition());
+                atualizarBotoes();
             }
         });
         // Define o estado selecionado da imagem

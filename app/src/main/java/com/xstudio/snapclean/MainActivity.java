@@ -58,8 +58,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements SelecionadosFragment.OnArquivoRecuperadoListener {
 
     //TextView hello;
     private DrawerLayout drawerLayout;
@@ -212,14 +211,14 @@ public class MainActivity extends AppCompatActivity {
         icLixeira1.setOnClickListener(view -> {
             if (testeSeJaFoiCriado == null) {
                 SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
+                selecionadosFragment.setOnArquivoRecuperadoListener(this);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.container_selecionados, selecionadosFragment)
                         .commit();
             } else {
+                testeSeJaFoiCriado.setOnArquivoRecuperadoListener(this);
                 testeSeJaFoiCriado.atualizarListaDeExclusao(listaDeExclusao);
             }
-            layoutPrincipal = findViewById(R.id.layout_principal);
-            layoutPrincipal.setVisibility(View.GONE);
         });
 
 
@@ -350,9 +349,15 @@ public class MainActivity extends AppCompatActivity {
         Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<>());
         if (switchBackup.isChecked()) {
             for (String uriString : exclusionList) {
+                System.out.println(uriString);
                 Uri uri = Uri.parse(uriString);
                 DocumentFile file = DocumentFile.fromSingleUri(this, uri);
-                listaDeExclusao.add(file);
+                System.out.println("File -> "+file.exists());
+                if (file.exists()){
+                    listaDeExclusao.add(0, file);
+                } else {
+                    continue;
+                };
             }
         } else {
             listaDeExclusao.clear();
@@ -560,6 +565,28 @@ public class MainActivity extends AppCompatActivity {
         saveExclusionList();
     }
 
+    //Recebendo a lista manipulada pela SelecionadosFragment
+    private void exibirSelecionados() {
+        SelecionadosFragment fragment = new SelecionadosFragment(listaDeExclusao);
+        fragment.setOnArquivoRecuperadoListener(this);
+    }
+
+    @Override
+    public void onArquivoRecuperado(DocumentFile arquivo) {
+        // Atualizar a lista de exclusão
+        if (arquivo != null) {
+            // Atualizar a lista de exclusão
+            listaDeExclusao.remove(arquivo);
+            saveExclusionList();
+            System.out.println("Lista -> " + listaDeExclusao);
+            listaDeExclusao.remove(arquivo);
+            exibirSelecionados();
+        }
+        saveExclusionList();
+        numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
+        System.out.println("Lista -> " + listaDeExclusao);
+    }
+    // Fim Recebendo a lista manipulada pela SelecionadosFragment
 
     public void voltarAoNormalTamanhoETransaltion() {
         isZooming = false;
@@ -587,25 +614,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    TextView cuidadoPastaRaiz;
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null && data.getData() != null) {
-                        pastaSelecionada = data.getData();
+                System.out.println("PASTA -> "+result.getData());
+                cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
+                layoutImagens = findViewById(R.id.layout_imagens);
+                constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+                layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
+                //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
+                if (result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")){
+                    cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+                    layoutImagens.setVisibility(View.GONE);
+                    constraintIconesBaixo.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.GONE);
+                    zoomOut.setVisibility(View.GONE);
+                    layoutPastaCentral.setVisibility(View.VISIBLE);
+                } else {
+                    cuidadoPastaRaiz.setVisibility(View.GONE);
+                    String ondeTaErrado = result.getData().toString();
+                    System.out.println(ondeTaErrado);
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null && data.getData() != null) {
+                            pastaSelecionada = data.getData();
 
-                        getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                        // Continuar com o processamento da pasta selecionada
-                        layoutImagens = findViewById(R.id.layout_imagens);
-                        layoutImagens.setVisibility(View.VISIBLE);
-                        constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
-                        constraintIconesBaixo.setVisibility(View.VISIBLE);
-                        zoomIn.setVisibility(View.VISIBLE);
-                        zoomOut.setVisibility(View.VISIBLE);
-                        exibirImagemPastaSelecionada(data.getData());
+                            // Continuar com o processamento da pasta selecionada
+
+                            layoutImagens.setVisibility(View.VISIBLE);
+                            constraintIconesBaixo.setVisibility(View.VISIBLE);
+                            zoomIn.setVisibility(View.VISIBLE);
+                            zoomOut.setVisibility(View.VISIBLE);
+                            exibirImagemPastaSelecionada(data.getData());
+                        }
                     }
                 }
+
+
             });
 
     @Override
@@ -1024,7 +1071,7 @@ public class MainActivity extends AppCompatActivity {
 
                     extensaoDesconhecida.setVisibility(View.VISIBLE);
                     textoNomeArquivo.setText(arquivo.getName());
-                    textoAviso.setText("Extensão não suportada");
+                    textoAviso.setText("Extensão não suportada\nNão recomendamos que exclua.");
 
                     System.out.println("---------------------");
                 }
@@ -1038,7 +1085,7 @@ public class MainActivity extends AppCompatActivity {
 
                 extensaoDesconhecida.setVisibility(View.VISIBLE);
                 textoNomeArquivo.setText(arquivo.getName());
-                textoAviso.setText("Extensão não encontrada");
+                textoAviso.setText("Extensão não encontrada\nNão recomendamos que exclua.");
             }
 
             arquivoAtual.set(arquivo);

@@ -121,7 +121,7 @@
         tools:context=".MainActivity">
 
         <Button
-            android:id="@+id/button4"
+            android:id="@+id/botao_apagar"
             android:layout_width="140dp"
             android:layout_height="40dp"
             android:backgroundTint="#FF0000"
@@ -142,10 +142,10 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/botao_recuperar"
             android:layout_width="140dp"
             android:layout_height="40dp"
-            android:backgroundTint="#FF434343"
+            android:backgroundTint="@color/black"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:paddingLeft="12dp"
@@ -330,7 +330,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="75dp"
-                android:text="Extensão não suportada"
+                android:text="Extensão não suportada\nNão recomendamos que exclua."
                 android:textAlignment="center"
                 android:textColor="#FFECCB"
                 app:layout_constraintEnd_toEndOf="parent"
