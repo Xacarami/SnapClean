@@ -1,6 +1,8 @@
 package com.xstudio.snapclean.fragments;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -86,6 +88,16 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         adapter.setBotoes(botaoRecuperar, botaoApagarTudo);
         recyclerView.setAdapter(adapter);
 
+        if (adapter.getListaDeSelecionados().isEmpty()) {
+            botaoRecuperar.setText("Recuperar");
+            botaoRecuperar.setEnabled(false);
+            botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
+        } else {
+            botaoRecuperar.setEnabled(true);
+            botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(0xFF289500));
+        }
+
+
         imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
 
         quantidadeTotal = getView().findViewById(R.id.quantidade_total);
@@ -102,9 +114,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 todasSelecionadas = true;
             }
         });
-
-        botaoRecuperar = view.findViewById(R.id.botao_recuperar);
-        botaoApagarTudo = view.findViewById(R.id.botao_apagar);
 
         botaoRecuperar.setOnClickListener(v -> {
             System.out.println("Recuperar");

@@ -26,10 +26,13 @@ import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -124,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         setContentView(R.layout.activity_main);
         //hello = findViewById(R.id.hello);
 
-        //muda a cor da barra de status
+        //muda a cor da barra de status, pretendo comentado até adaptar para apis menores
         //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         getWindow().setStatusBarColor(Color.parseColor("#161618"));
         //}
@@ -135,9 +138,25 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             //Solicitando permissões
-            ActivityCompat.requestPermissions(this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
-            System.out.println("Permissão talvez negada");
-            Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    // Permissão concedida
+                    System.out.println("Permissão concedida");
+                    acessoNaPasta = true;
+                } else {
+                    // Permissão negada
+                    System.out.println("Permissão negada");
+                    acessoNaPasta = false;
+                    Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
+                    requestManageExternalStoragePermission();
+                }
+            } else {
+                System.out.println("Permissão negada");
+                acessoNaPasta = false;
+                Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
+                ActivityCompat.requestPermissions(this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
+            }
+
             //hello.setText("Permissões ainda não aceitas");
         } else {
             System.out.println("Permissão concedida");
@@ -242,8 +261,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         //Selecionador de pastas
         View.OnClickListener selecionarPastaClickListener = v -> {
-            System.out.println(pastaJaFoiSelecionada);
-
             if (!pastaJaFoiSelecionada) {
                 if (acessoNaPasta) {
                     selecionarPasta();
@@ -255,9 +272,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 imagensCarregadas = 0;
                 selecionarPasta();
                 System.out.println("Pasta ja selecionada, e clicou em abrir mais uma");
-
             }
-
         };
 
         pastaCima.setOnClickListener(selecionarPastaClickListener);
@@ -305,7 +320,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 } else {
                     isZooming = true;
                     permitirArrasto = false;
-                    System.out.println("Zoom Dentro");
                     restaurarTamanho.setVisibility(View.VISIBLE);
                     layoutImagens.setTranslationX(0);
                     layoutImagens.setTranslationY(0);
@@ -318,8 +332,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             if (layoutImagens.getScaleX() >= 0.125) {
                 layoutImagens.setScaleX(layoutImagens.getScaleX() * 0.5f);
                 layoutImagens.setScaleY(layoutImagens.getScaleY() * 0.5f);
-                System.out.println(layoutImagens.getScaleX());
-                System.out.println(layoutImagens.getScaleY());
 
                 if (layoutImagens.getScaleX() > 1 || layoutImagens.getScaleY() > 1) {
                     isZooming = true;
@@ -346,7 +358,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         });
 
         restaurarTamanho.setOnClickListener(v -> voltarAoNormalTamanhoETransaltion());
-
         settings = getSharedPreferences(PREFS_NAME, 0);
 
         // Recuperar a lista de exclusão salva, transforma de uri para arquivo
@@ -354,10 +365,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<>());
         if (switchBackup.isChecked()) {
             for (String uriString : exclusionList) {
-                System.out.println(uriString);
                 Uri uri = Uri.parse(uriString);
                 DocumentFile file = DocumentFile.fromSingleUri(this, uri);
-                if (file.exists()) {
+                if (file != null && file.exists()) {
                     listaDeExclusao.add(0, file);
                 }
             }
@@ -367,7 +377,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         numeroLixeira = findViewById(R.id.numero_lixeira);
         numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-
 
         layoutImagens.setOnTouchListener(new View.OnTouchListener() {
             private ObjectAnimator animator;
@@ -400,7 +409,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     return true;
                 }
                 if (permitirArrasto) {
-                    System.out.println("Ta fora do isZooming");
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_MOVE:
                             if (animator != null && animator.isRunning()) {
@@ -421,13 +429,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                 if (x2 > x1) {
                                     // Deslizou da esquerda para a direita - Guardar arquivo
                                     animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", layoutImagens.getWidth());
-                                    System.out.println("Arrastou para guardar");
                                     voltarIconesAparecer();
                                     guardandoArquivo();
                                 } else {
                                     // Deslizou da direita para a esquerda - Excluir arquivo
                                     animator = ObjectAnimator.ofFloat(layoutImagens, "translationX", -layoutImagens.getWidth());
-                                    System.out.println("Arrastou para excluir");
                                     excluindoArquivo();
                                     voltarIconesAparecer();
                                 }
@@ -457,7 +463,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         // Inicia o pressionamento longo
                         v.postDelayed(() -> {
                             // Aqui você pode adicionar o código para tornar os ícones mais transparentes
-                            System.out.println("Segurando o dedo no layout");
                             constraintIconesCima = findViewById(R.id.constraint_icones_cima);
                             constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
 
@@ -485,7 +490,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             //Verifica as permissões, dentro disso vai o que ta permitido
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                System.out.println("PERMISSÕES GARANTIDAS!!!!!!!!!!!!");
+                System.out.println("PERMISSÕES GARANTIDAS!!!!!!!!!");
                 acessoNaPasta = true;
                 //hello.setText("permissoes concedidas");
             } else {
@@ -531,29 +536,22 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         for (DocumentFile arquivoExcluido : listaDeExclusao) {
             if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
                 arquivoJaExcluido = true;
-                System.out.println("Já tem");
-                System.out.println(arquivoExcluido.getUri());
                 break;
             }
         }
         if (!arquivoJaExcluido) {
             listaDeExclusao.add(0, arquivoAtual.get());
             numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-            System.out.println(arquivoAtual.get().getUri());
         }
         saveExclusionList();
-        System.out.println("Clicou no botao de excluir");
-        System.out.println(listaDeExclusao);
     }
 
     public void guardandoArquivo() {
         for (DocumentFile arquivoExcluido : listaDeExclusao) {
             if (arquivoExcluido.getUri().equals(arquivoAtual.get().getUri())) {
-                System.out.println("Já tem");
                 listaDeExclusao.remove(arquivoExcluido);
                 saveExclusionList();
                 numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-                System.out.println(arquivoExcluido.getUri());
                 break;
             }
         }
@@ -573,13 +571,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             // Atualizar a lista de exclusão
             listaDeExclusao.remove(arquivo);
             saveExclusionList();
-            System.out.println("Lista -> " + listaDeExclusao);
             listaDeExclusao.remove(arquivo);
             exibirSelecionados();
         }
         saveExclusionList();
         numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
-        System.out.println("Lista -> " + listaDeExclusao);
     }
     // Fim Recebendo a lista manipulada pela SelecionadosFragment
 
@@ -609,46 +605,105 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
+    private void requestManageExternalStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse(String.format("package:%s", getPackageName())));
+                manageExternalStorageLauncher.launch(intent);
+            }
+        }
+    }
+
+    private final ActivityResultLauncher<Intent> manageExternalStorageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        // Permissão concedida
+                        acessoNaPasta = true;
+                    } else {
+                        // Permissão negada
+                        acessoNaPasta = false;
+                        requestManageExternalStoragePermission();
+                    }
+                }
+            }
+    );
+
     TextView cuidadoPastaRaiz;
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                System.out.println("PASTA -> " + result.getData());
                 cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
                 layoutImagens = findViewById(R.id.layout_imagens);
                 constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
                 layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
-                //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
-                if (result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
-                    cuidadoPastaRaiz.setVisibility(View.VISIBLE);
-                    layoutImagens.setVisibility(View.GONE);
-                    constraintIconesBaixo.setVisibility(View.GONE);
-                    zoomIn.setVisibility(View.GONE);
-                    zoomOut.setVisibility(View.GONE);
-                    layoutPastaCentral.setVisibility(View.VISIBLE);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        // Permissão concedida
+                        if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
+                            cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+                            layoutImagens.setVisibility(View.GONE);
+                            constraintIconesBaixo.setVisibility(View.GONE);
+                            zoomIn.setVisibility(View.GONE);
+                            zoomOut.setVisibility(View.GONE);
+                            layoutPastaCentral.setVisibility(View.VISIBLE);
+                        } else {
+                            cuidadoPastaRaiz.setVisibility(View.GONE);
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                Intent data = result.getData();
+                                if (data != null && data.getData() != null) {
+                                    pastaSelecionada = data.getData();
+
+                                    getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                                    // Continuar com o processamento da pasta selecionada
+
+                                    layoutImagens.setVisibility(View.VISIBLE);
+                                    constraintIconesBaixo.setVisibility(View.VISIBLE);
+                                    zoomIn.setVisibility(View.VISIBLE);
+                                    zoomOut.setVisibility(View.VISIBLE);
+                                    exibirImagemPastaSelecionada(data.getData());
+                                }
+                            }
+                        }
+                    } else {
+                        // Permissão negada
+                        requestManageExternalStoragePermission();
+                    }
                 } else {
-                    cuidadoPastaRaiz.setVisibility(View.GONE);
-                    String ondeTaErrado = result.getData().toString();
-                    System.out.println(ondeTaErrado);
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        if (data != null && data.getData() != null) {
-                            pastaSelecionada = data.getData();
+                    System.out.println("API menor que Android 11");
+                    //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
+                    if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
+                        cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+                        layoutImagens.setVisibility(View.GONE);
+                        constraintIconesBaixo.setVisibility(View.GONE);
+                        zoomIn.setVisibility(View.GONE);
+                        zoomOut.setVisibility(View.GONE);
+                        layoutPastaCentral.setVisibility(View.VISIBLE);
+                    } else {
+                        cuidadoPastaRaiz.setVisibility(View.GONE);
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent data = result.getData();
+                            if (data != null && data.getData() != null) {
+                                pastaSelecionada = data.getData();
 
-                            getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                            // Continuar com o processamento da pasta selecionada
+                                // Continuar com o processamento da pasta selecionada
 
-                            layoutImagens.setVisibility(View.VISIBLE);
-                            constraintIconesBaixo.setVisibility(View.VISIBLE);
-                            zoomIn.setVisibility(View.VISIBLE);
-                            zoomOut.setVisibility(View.VISIBLE);
-                            exibirImagemPastaSelecionada(data.getData());
+                                layoutImagens.setVisibility(View.VISIBLE);
+                                constraintIconesBaixo.setVisibility(View.VISIBLE);
+                                zoomIn.setVisibility(View.VISIBLE);
+                                zoomOut.setVisibility(View.VISIBLE);
+                                exibirImagemPastaSelecionada(data.getData());
+                            }
                         }
                     }
                 }
-
-
             });
+
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent evento) {
@@ -701,8 +756,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             tamanhoDaLista = listaDeArquivos.length;
 
             //Ordena a listaDeArquivos do último modificado ao primeiro (pastas ficam no fim)
-
-            System.out.println("Acabou de selecionar a pasta");
             pastaJaFoiSelecionada = true;
 
             AlertDialog.Builder builderDois = new AlertDialog.Builder(this);
@@ -786,7 +839,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     resultado.set(-1);
                     voltador = -1;
                 }
-                System.out.println("Clicou no botao de voltar");
                 iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
                 botaoAvancar = findViewById(R.id.aceitar_imagem);
                 botaoExcluir = findViewById(R.id.negar_imagem);
@@ -808,7 +860,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             continuarLoop(quantidadeDeImagens, voltador);
         }
     }
-
 
     private ObjectAnimator animator;
 
@@ -908,7 +959,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         if (resetouPasta) {
             imagensCarregadas = 0;
-            System.out.println("testar if");
         }
 
         voltarIconesAparecer();
@@ -921,9 +971,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             DocumentFile arquivo = arrayDeArquivos[i];
             String caminhoArquivo = arquivo.getUri().toString();
             String extensao = arquivo.getName();
-
-            System.out.println(extensao);
-
 
             if (arquivo.getType() != null && extensao != null) {
                 if (isImagem(extensao)) {
@@ -1009,12 +1056,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                 tempoAudioMaximo.setText(textoTempoDuracaoTotal);
 
                                 seekBar.setMax(mediaPlayer.getDuration());
-                                System.out.println(mediaPlayer.getDuration());
                                 handler.post(updateSeekBarRunnable);
 
                                 if (autoplaySwitch.isChecked()) {
                                     mediaPlayer.start();
-                                    System.out.println("Play automatico");
                                     playButton.setVisibility(View.GONE);
                                     pauseButton.setVisibility(View.VISIBLE);
                                 }
@@ -1053,10 +1098,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                         throw new RuntimeException(e);
                     }
                 } else {
-                    System.out.println("---------------------");
-                    System.out.println("Arquivo de extensão desconhecida");
-                    System.out.println("Tipo: " + arquivo.getType());
-                    System.out.println("Nome: " + arquivo.getName());
+                    //Se for uma extensão diferente das de dentro de isImagem, isAudio e isVideo, mas existe uma extensão.
                     imageView.setVisibility(View.GONE);
                     videoView.setVisibility(View.GONE);
                     constraintAudio.setVisibility(View.GONE);
@@ -1066,11 +1108,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     extensaoDesconhecida.setVisibility(View.VISIBLE);
                     textoNomeArquivo.setText(arquivo.getName());
                     textoAviso.setText("Extensão não suportada\nNão recomendamos que exclua.");
-
-                    System.out.println("---------------------");
                 }
             } else {
-                System.out.println("Não tem extensão");
+                //Caso não tenha Extensão
                 imageView.setVisibility(View.GONE);
                 videoView.setVisibility(View.GONE);
                 constraintAudio.setVisibility(View.GONE);
@@ -1079,7 +1119,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                 extensaoDesconhecida.setVisibility(View.VISIBLE);
                 textoNomeArquivo.setText(arquivo.getName());
-                textoAviso.setText("Extensão não encontrada\nNão recomendamos que exclua.");
+                textoAviso.setText("Extensão não encontrada.\nPode ser uma pasta ou arquivo sem extensão.\nNão recomendamos que exclua.");
             }
 
             arquivoAtual.set(arquivo);
@@ -1109,12 +1149,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             imagensCarregadas = 0;
 
             constraintIconesBaixo.setVisibility(View.GONE);
-
             layoutPastaCentral.setVisibility(View.VISIBLE);
             layoutImagens.setVisibility(View.GONE);
             zoomIn.setVisibility(View.GONE);
             zoomOut.setVisibility(View.GONE);
-
         }
     }
 
