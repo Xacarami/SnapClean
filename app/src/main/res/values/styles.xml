@@ -1,0 +1,7 @@
+<resources>
+    <!-- Estilo do botão personalizado -->
+    <style name="MeuBotaoStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/botao_personalizado</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+</resources>

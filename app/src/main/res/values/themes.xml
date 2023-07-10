@@ -5,5 +5,5 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.SnapClean" parent="Base.Theme.SnapClean" />
+    <style name="Theme.SnapClean" parent="Base.Theme.SnapClean"/>
 </resources>

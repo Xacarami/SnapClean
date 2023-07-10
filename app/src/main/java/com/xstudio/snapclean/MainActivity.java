@@ -1,6 +1,9 @@
 package com.xstudio.snapclean;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+
 import androidx.activity.result.ActivityResultLauncher;
+import com.xstudio.snapclean.R;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,9 +21,11 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
@@ -32,6 +37,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
@@ -94,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     ConstraintLayout constraintIconesCima;
     ImageButton iconeMaisImagens;
     Switch switchBackup;
+    ConstraintLayout botaoWhatsapp;
     private float currentTranslationX = 0f;
     private float currentTranslationY = 0f;
     ConstraintLayout constraintIconesBaixo;
@@ -114,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     float alphaIcone = 0.05f;
 
     private static final String[] STORAGE_PERMISSIONS = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
+            READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
@@ -133,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         //}
 
         //Já garante a permissão de primeira
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -202,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
         });
 
+
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
@@ -258,6 +266,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
         });
 
+        botaoWhatsapp = findViewById(R.id.botao_whatsapp);
+        botaoWhatsapp.setOnClickListener(view -> {
+            System.out.println("Ta indo");
+            coisaDeAndroidR();
+        });
 
         //Selecionador de pastas
         View.OnClickListener selecionarPastaClickListener = v -> {
@@ -504,11 +517,18 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
     //Mensagem que aparece quando a pessoa nega as permissões
     private void showPermissionExplanationDialog() {
-        new AlertDialog.Builder(this)
-                .setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.")
-                .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS))
-                .create()
-                .show();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            System.out.println("Permissão negada");
+            acessoNaPasta = false;
+            Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
+            requestManageExternalStoragePermission();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.")
+                    .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS))
+                    .create()
+                    .show();
+        }
     }
 
     //toda vez que saveExclusionList é chamado, o backup se atualiza com a listaDeExclusao
@@ -615,6 +635,129 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
+    TextView quantidadeImagens;
+
+    private void coisaDeAndroidR(){
+        /*
+        String[] projection = new String[]{
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.MIME_TYPE,
+                MediaStore.Images.Media.RELATIVE_PATH
+        };
+
+        String selection = MediaStore.Images.Media.RELATIVE_PATH + "=?";
+        String[] selectionArgs = new String[]{"WhatsApp/Media/WhatsApp Images"};
+        //String[] selectionArgs = new String[]{"/Android/media/com.whatsapp/WhatsApp/Media"};
+
+        try (Cursor cursor = getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+        )) {
+            System.out.println(cursor);
+            System.out.println(cursor.moveToNext());
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
+                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
+
+                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    // Acessar o arquivo aqui
+                    System.out.println(name);
+                    //exibirImagemPastaSelecionada(uri);
+                }
+            }
+        }
+
+         */
+        int i = 0;
+        quantidadeImagens = findViewById(R.id.quantidade_imagens);
+        //quantidadeImagens.setText("Número de arquivos\n" + String.valueOf(i));
+
+        String[] projection = new String[]{
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.MIME_TYPE
+        };
+
+        String selection = MediaStore.Images.Media.RELATIVE_PATH + "=?";
+        String[] selectionArgs = new String[]{"WhatsApp/Media/WhatsApp Images"};
+
+        try (Cursor cursor = getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+        )) {
+            if (cursor != null) {
+                System.out.println(cursor.moveToNext());
+                while (cursor.moveToNext()) {
+                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
+                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
+
+                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    // Acessar o arquivo aqui
+                    //exibirImagemPastaSelecionada(uri);
+                    System.out.println(i);
+                    i++;
+                }
+                quantidadeImagens.setText("Número de arquivos\n" + String.valueOf(i));
+            }
+        }
+
+        layoutImagens = findViewById(R.id.layout_imagens);
+        constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+        zoomIn = findViewById(R.id.zoom_in);
+        zoomOut = findViewById(R.id.zoom_out);
+
+        layoutImagens.setVisibility(View.VISIBLE);
+        constraintIconesBaixo.setVisibility(View.VISIBLE);
+        zoomIn.setVisibility(View.VISIBLE);
+        zoomOut.setVisibility(View.VISIBLE);
+        arrayDeArquivos = null;
+
+        Uri confio;
+
+        /*
+        try (Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, null)) {
+            System.out.println(cursor);
+            if (cursor != null) {
+                System.out.println(cursor.moveToNext());
+                while (cursor.moveToNext()) {
+                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
+                    System.out.println(id);
+                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
+                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
+
+                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                    // Acessar o arquivo aqui
+                    System.out.println(uri.buildUpon());
+                    exibirImagemPastaSelecionada(uri);
+                }
+            }
+
+        }
+
+         */
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+
+        } else {
+            confio = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AWhatsApp%2FMedia%2FWhatsApp%20Images");
+            System.out.println(confio);
+            exibirImagemPastaSelecionada(confio);
+        }
+
+         */
+
+    }
+
     private final ActivityResultLauncher<Intent> manageExternalStorageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -631,6 +774,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
     );
 
+    TextView textUri;
+
     TextView cuidadoPastaRaiz;
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -638,6 +783,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 layoutImagens = findViewById(R.id.layout_imagens);
                 constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
                 layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
+
+                textUri = findViewById(R.id.text_uri);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     if (Environment.isExternalStorageManager()) {
@@ -659,11 +806,14 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                     getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                                     // Continuar com o processamento da pasta selecionada
-
                                     layoutImagens.setVisibility(View.VISIBLE);
                                     constraintIconesBaixo.setVisibility(View.VISIBLE);
                                     zoomIn.setVisibility(View.VISIBLE);
                                     zoomOut.setVisibility(View.VISIBLE);
+
+                                    System.out.println(data.getData().toString());
+                                    String sla = data.getData().toString();
+                                    textUri.setText(sla);
                                     exibirImagemPastaSelecionada(data.getData());
                                 }
                             }
@@ -688,6 +838,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             Intent data = result.getData();
                             if (data != null && data.getData() != null) {
                                 pastaSelecionada = data.getData();
+                                System.out.println(pastaSelecionada);
 
                                 getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
@@ -697,6 +848,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                 constraintIconesBaixo.setVisibility(View.VISIBLE);
                                 zoomIn.setVisibility(View.VISIBLE);
                                 zoomOut.setVisibility(View.VISIBLE);
+
+                                System.out.println(data.getData().toString());
+                                String sla = data.getData().toString();
+                                textUri.setText(sla);
+
                                 exibirImagemPastaSelecionada(data.getData());
                             }
                         }
@@ -1157,7 +1313,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private boolean isImagem(String extensao) {
-        return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg");
+        return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg") || extensao.endsWith("webp");
     }
 
     private boolean isVideo(String extensao) {

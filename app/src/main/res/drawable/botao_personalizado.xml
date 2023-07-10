@@ -1,0 +1,14 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#404040"/> <!-- Defina a cor do background quando o botão é pressionado -->
+            <corners android:radius="10dp"/> <!-- Defina o raio das bordas arredondadas -->
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#292929"/> <!-- Defina a cor do background padrão do botão -->
+            <corners android:radius="10dp"/> <!-- Defina o raio das bordas arredondadas -->
+        </shape>
+    </item>
+</selector>
