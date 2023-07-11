@@ -17,6 +17,21 @@
         android:visibility="visible"
         tools:context=".MainActivity">
 
+        <ImageView
+            android:id="@+id/duas_setas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="47dp"
+            android:scaleX="0.05"
+            android:scaleY="0.05"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/layout_imagens"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@mipmap/ic_duas_setas"
+            app:tint="#FFFFFF" />
+
         <FrameLayout
             android:id="@+id/layout_imagens"
             android:layout_width="match_parent"
@@ -355,8 +370,8 @@
                 android:layout_marginStart="60dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="Apagar"
-                android:scaleX="1.5"
-                android:scaleY="1.5"
+                android:scaleX="1.35"
+                android:scaleY="1.35"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/voltar_imagem"
                 app:layout_constraintTop_toTopOf="parent"
@@ -572,7 +587,7 @@
         android:layout_width="320dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#81002183"
+        android:background="@color/sidebarColor"
         android:orientation="vertical"
         android:visibility="visible">
 

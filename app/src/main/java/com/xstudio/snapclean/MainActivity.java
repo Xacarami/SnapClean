@@ -52,6 +52,7 @@ import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
+import com.xstudio.snapclean.fragments.Tutorial;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -113,14 +114,11 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
     float x1, x2;
     float y1;
-    float MIN_DISTANCE = 150;
+    float MIN_DISTANCE = 120;
     float alphaIcone = 0.05f;
 
 
-    private static final String[] STORAGE_PERMISSIONS = {
-            READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
+    private static final String[] STORAGE_PERMISSIONS = {READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     //Isso servirá para desativar os ícones ao abrir a sideBar
     ArrayList<View> icons = new ArrayList<>();
@@ -141,10 +139,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         //}
 
         //Já garante a permissão de primeira
-        if (ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             //Solicitando permissões
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
@@ -245,8 +240,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             if (testeSeJaFoiCriado == null) {
                 SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
                 selecionadosFragment.setOnArquivoRecuperadoListener(this);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container_selecionados, selecionadosFragment)
+                getSupportFragmentManager().beginTransaction().replace(R.id.container_selecionados, selecionadosFragment).addToBackStack(null) // Adiciona o fragmento à pilha de retorno
                         .commit();
             } else {
                 testeSeJaFoiCriado.setOnArquivoRecuperadoListener(this);
@@ -512,8 +506,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         //Verifica se as permissões foram concedidas
         if (requestCode == REQUEST_STORAGE_PERMISSIONS) {
             //Verifica as permissões, dentro disso vai o que ta permitido
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 System.out.println("PERMISSÕES GARANTIDAS!!!!!!!!!");
                 acessoNaPasta = true;
                 //hello.setText("permissoes concedidas");
@@ -534,11 +527,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
             requestManageExternalStoragePermission();
         } else {
-            new AlertDialog.Builder(this)
-                    .setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.")
-                    .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS))
-                    .create()
-                    .show();
+            new AlertDialog.Builder(this).setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.").setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS)).create().show();
         }
     }
 
@@ -673,87 +662,83 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
      */
 
-    private final ActivityResultLauncher<Intent> manageExternalStorageLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (Environment.isExternalStorageManager()) {
-                        // Permissão concedida
-                        acessoNaPasta = true;
-                    } else {
-                        // Permissão negada
-                        acessoNaPasta = false;
-                        requestManageExternalStoragePermission();
-                    }
-                }
+    private final ActivityResultLauncher<Intent> manageExternalStorageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                // Permissão concedida
+                acessoNaPasta = true;
+            } else {
+                // Permissão negada
+                acessoNaPasta = false;
+                requestManageExternalStoragePermission();
             }
-    );
+        }
+    });
 
     //TextView textUri;
 
     TextView cuidadoPastaRaiz;
-    private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
-                layoutImagens = findViewById(R.id.layout_imagens);
-                constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
-                layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
+    private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
+        layoutImagens = findViewById(R.id.layout_imagens);
+        constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
+        layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
 
-                //Serve para debug a linha abaixo
-                //textUri = findViewById(R.id.text_uri);
+        //Serve para debug a linha abaixo
+        //textUri = findViewById(R.id.text_uri);
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (Environment.isExternalStorageManager()) {
-                        // Permissão concedida
-                        if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
-                            cuidadoPastaRaiz.setVisibility(View.VISIBLE);
-                            layoutImagens.setVisibility(View.GONE);
-                            constraintIconesBaixo.setVisibility(View.GONE);
-                            zoomIn.setVisibility(View.GONE);
-                            zoomOut.setVisibility(View.GONE);
-                            layoutPastaCentral.setVisibility(View.VISIBLE);
-                        } else {
-                            cuidadoPastaRaiz.setVisibility(View.GONE);
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                if (data != null && data.getData() != null) {
-                                    pastaSelecionada = data.getData();
-
-                                    getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                    exibidorDePasta(data.getData());
-                                    //textUri.setText(data.getData().toString());
-                                }
-                            }
-                        }
-                    } else {
-                        // Permissão negada
-                        requestManageExternalStoragePermission();
-                    }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                // Permissão concedida
+                if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
+                    cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+                    layoutImagens.setVisibility(View.GONE);
+                    constraintIconesBaixo.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.GONE);
+                    zoomOut.setVisibility(View.GONE);
+                    layoutPastaCentral.setVisibility(View.VISIBLE);
                 } else {
-                    System.out.println("API menor que Android 11");
-                    //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
-                    if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
-                        cuidadoPastaRaiz.setVisibility(View.VISIBLE);
-                        layoutImagens.setVisibility(View.GONE);
-                        constraintIconesBaixo.setVisibility(View.GONE);
-                        zoomIn.setVisibility(View.GONE);
-                        zoomOut.setVisibility(View.GONE);
-                        layoutPastaCentral.setVisibility(View.VISIBLE);
-                    } else {
-                        cuidadoPastaRaiz.setVisibility(View.GONE);
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            Intent data = result.getData();
-                            if (data != null && data.getData() != null) {
-                                pastaSelecionada = data.getData();
+                    cuidadoPastaRaiz.setVisibility(View.GONE);
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null && data.getData() != null) {
+                            pastaSelecionada = data.getData();
 
-                                getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                exibidorDePasta(pastaSelecionada);
-                                //textUri.setText(data.getData().toString());
-                            }
+                            getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            exibidorDePasta(data.getData());
+                            //textUri.setText(data.getData().toString());
                         }
                     }
                 }
-            });
+            } else {
+                // Permissão negada
+                requestManageExternalStoragePermission();
+            }
+        } else {
+            System.out.println("API menor que Android 11");
+            //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
+            if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
+                cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+                layoutImagens.setVisibility(View.GONE);
+                constraintIconesBaixo.setVisibility(View.GONE);
+                zoomIn.setVisibility(View.GONE);
+                zoomOut.setVisibility(View.GONE);
+                layoutPastaCentral.setVisibility(View.VISIBLE);
+            } else {
+                cuidadoPastaRaiz.setVisibility(View.GONE);
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null && data.getData() != null) {
+                        pastaSelecionada = data.getData();
+
+                        getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        exibidorDePasta(pastaSelecionada);
+                        //textUri.setText(data.getData().toString());
+                    }
+                }
+            }
+        }
+    });
 
 
     @Override
@@ -939,6 +924,37 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         animator.start();
     }
 
+    //Não fechar de primeira ao apertar o botão de volar do celular
+    private long backPressedTime;
+    private Toast backToast;
+
+    @Override
+    public void onBackPressed() {
+        //Fechar a selecionadosFragment
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+            System.out.println("Fragment aberto?");
+        } else {
+            //Fechar a sidebar
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                //super.onBackPressed();
+                //fechar a MainActivity
+                if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                    backToast.cancel();
+                    super.onBackPressed();
+                    return;
+                } else {
+                    backToast = Toast.makeText(getBaseContext(), "Pressione voltar novamente para sair", Toast.LENGTH_SHORT);
+                    backToast.show();
+                }
+                backPressedTime = System.currentTimeMillis();
+            }
+
+        }
+    }
+
     ImageButton playButton;
     ImageButton pauseButton;
     SeekBar seekBar;
@@ -1033,9 +1049,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     zoomIn.setVisibility(View.VISIBLE);
                     zoomOut.setVisibility(View.VISIBLE);
 
-                    Glide.with(this)
-                            .load(caminhoArquivo)
-                            .into(imageView);
+                    Glide.with(this).load(caminhoArquivo).into(imageView);
 
                 } else if (isVideo(extensao)) {
                     imageView.setVisibility(View.GONE);
@@ -1173,6 +1187,21 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 textoNomeArquivo.setText(arquivo.getName());
                 textoAviso.setText("Extensão não encontrada.\nPode ser uma pasta ou arquivo sem extensão.\nNão recomendamos que exclua.");
             }
+
+            //Tutorial para a primeira vez, somente a primeira vez
+            SharedPreferences prefs = getSharedPreferences("my_preferences", MODE_PRIVATE);
+            boolean tutorialShown = prefs.getBoolean("tutorial_shown", false);
+
+            if (!tutorialShown) {
+                Tutorial tutorial = new Tutorial(this);
+                tutorial.show();
+
+                // Depois que o tutorial for exibido, atualize o valor nas preferências compartilhadas
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean("tutorial_shown", true);
+                editor.apply();
+            }
+
 
             arquivoAtual.set(arquivo);
             resultado.set(0);

@@ -63,9 +63,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     @Override
     public void onImagemClicked(DocumentFile imagem) {
         String caminhoArquivo = imagem.getUri().toString();
-        Glide.with(this)
-                .load(caminhoArquivo)
-                .into(imagemTelaInteira);
+        Glide.with(this).load(caminhoArquivo).into(imagemTelaInteira);
         imagemTelaInteira.setVisibility(View.VISIBLE);
     }
 
@@ -381,9 +379,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 constraintAudio.setVisibility(View.GONE);
                 extensaoDesconhecida.setVisibility(View.GONE);
 
-                Glide.with(imageView.getContext())
-                        .load(caminhoArquivo)
-                        .into(imageView);
+                Glide.with(imageView.getContext()).load(caminhoArquivo).into(imageView);
 
             } else if (isVideo(extensao)) {
                 imageView.setVisibility(View.GONE);

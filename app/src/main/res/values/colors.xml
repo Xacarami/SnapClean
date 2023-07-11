@@ -2,5 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="brancoEstatico">#FFFFFFFF</color>
     <color name="green">#FF289500</color>
+    <color name="greenButton">#2EFF00</color>
+    <color name="fundoTutorial">#2C2C2E</color>
+    <color name="gray">#454547</color>
+    <color name="sidebarColor">#81002183</color>
+    <color name="red">#FF0101</color>
 </resources>
