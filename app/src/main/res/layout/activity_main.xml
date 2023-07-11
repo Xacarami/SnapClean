@@ -437,7 +437,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="25dp"
             android:layout_marginEnd="25dp"
-            android:text="Tenha cuidado! A pasta raíz foi selecionada, e isso poderia acarretar em um problema interno no aparelho. Selecione uma pasta permitida."
+            android:text="Desculpe, mas o Android não permite que o app acesse essa pasta, pois ela contém arquivos importantes para o funcionamento do aparelho. Por favor, escolha outra pasta que seja permitida."
             android:textAlignment="center"
             android:textColor="#F44336"
             android:visibility="gone"
@@ -449,7 +449,7 @@
             android:id="@+id/constraintLayout_PastaCentral"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="@+id/layout_imagens"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">

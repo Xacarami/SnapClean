@@ -634,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private void exibidorDePasta(Uri data) {
-        cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
+        cuidadoPastaProtegida = findViewById(R.id.cuidado_pasta_raiz);
         layoutImagens = findViewById(R.id.layout_imagens);
         constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
         layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
@@ -677,9 +677,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
     //TextView textUri;
 
-    TextView cuidadoPastaRaiz;
+    TextView cuidadoPastaProtegida;
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
+        cuidadoPastaProtegida = findViewById(R.id.cuidado_pasta_raiz);
         layoutImagens = findViewById(R.id.layout_imagens);
         constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
         layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
@@ -690,15 +690,15 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (Environment.isExternalStorageManager()) {
                 // Permissão concedida
-                if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
-                    cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+                if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }") || result.getData().toString().equals("Intent { dat=content://com.android.providers.downloads.documents/tree/downloads flg=0xc3 }")) {
+                    cuidadoPastaProtegida.setVisibility(View.VISIBLE);
                     layoutImagens.setVisibility(View.GONE);
                     constraintIconesBaixo.setVisibility(View.GONE);
                     zoomIn.setVisibility(View.GONE);
                     zoomOut.setVisibility(View.GONE);
                     layoutPastaCentral.setVisibility(View.VISIBLE);
                 } else {
-                    cuidadoPastaRaiz.setVisibility(View.GONE);
+                    cuidadoPastaProtegida.setVisibility(View.GONE);
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null && data.getData() != null) {
@@ -716,16 +716,17 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
         } else {
             System.out.println("API menor que Android 11");
+            //System.out.println(result.getData().toString());
             //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
-            if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }")) {
-                cuidadoPastaRaiz.setVisibility(View.VISIBLE);
+            if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }") || result.getData().toString().equals("Intent { dat=content://com.android.providers.downloads.documents/tree/downloads flg=0xc3 }")) {
+                cuidadoPastaProtegida.setVisibility(View.VISIBLE);
                 layoutImagens.setVisibility(View.GONE);
                 constraintIconesBaixo.setVisibility(View.GONE);
                 zoomIn.setVisibility(View.GONE);
                 zoomOut.setVisibility(View.GONE);
                 layoutPastaCentral.setVisibility(View.VISIBLE);
             } else {
-                cuidadoPastaRaiz.setVisibility(View.GONE);
+                cuidadoPastaProtegida.setVisibility(View.GONE);
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Intent data = result.getData();
                     if (data != null && data.getData() != null) {
@@ -1039,6 +1040,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             DocumentFile arquivo = arrayDeArquivos[i];
             String caminhoArquivo = arquivo.getUri().toString();
             String extensao = arquivo.getName();
+            arquivoAtual.set(arquivo);
 
             if (arquivo.getType() != null && extensao != null) {
                 if (isImagem(extensao)) {
@@ -1203,7 +1205,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
 
 
-            arquivoAtual.set(arquivo);
+
             resultado.set(0);
             ajuste = resultado.get();
             voltador = 0;
