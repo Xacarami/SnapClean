@@ -3,7 +3,6 @@ package com.xstudio.snapclean;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 import androidx.activity.result.ActivityResultLauncher;
-import com.xstudio.snapclean.R;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,11 +20,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentUris;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
@@ -37,7 +34,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
@@ -100,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     ConstraintLayout constraintIconesCima;
     ImageButton iconeMaisImagens;
     Switch switchBackup;
-    ConstraintLayout botaoWhatsapp;
+    //ConstraintLayout botaoWhatsapp;
     private float currentTranslationX = 0f;
     private float currentTranslationY = 0f;
     ConstraintLayout constraintIconesBaixo;
@@ -120,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     float MIN_DISTANCE = 150;
     float alphaIcone = 0.05f;
 
+
     private static final String[] STORAGE_PERMISSIONS = {
             READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -127,11 +124,15 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
     //Isso servirá para desativar os ícones ao abrir a sideBar
     ArrayList<View> icons = new ArrayList<>();
+    //private String meuEstado;
+    DocumentFile[] listaDeArquivos;
+    //private ArrayList<Uri> listaDeImagens;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         //hello = findViewById(R.id.hello);
 
         //muda a cor da barra de status, pretendo comentado até adaptar para apis menores
@@ -266,11 +267,19 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
         });
 
+        //Adição futura para selecionar de forma mais rápida pastas específicas sem precisar navegar pelo gerenciador de arquivos
+        /*
         botaoWhatsapp = findViewById(R.id.botao_whatsapp);
         botaoWhatsapp.setOnClickListener(view -> {
             System.out.println("Ta indo");
-            coisaDeAndroidR();
+            if (acessoNaPasta) {
+                coisaDeAndroidR();
+            } else {
+                showPermissionExplanationDialog();
+            }
         });
+
+         */
 
         //Selecionador de pastas
         View.OnClickListener selecionarPastaClickListener = v -> {
@@ -340,7 +349,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
         });
 
-        //private ObjectAnimator animator;
         zoomOut.setOnClickListener(v -> {
             if (layoutImagens.getScaleX() >= 0.125) {
                 layoutImagens.setScaleX(layoutImagens.getScaleX() * 0.5f);
@@ -375,6 +383,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         // Recuperar a lista de exclusão salva, transforma de uri para arquivo
         switchBackup = findViewById(R.id.switchBackup);
+
+        switchBackup.setOnClickListener(v -> saveExclusionList());
+
         Set<String> exclusionList = settings.getStringSet(PREF_EXCLUSION_LIST, new LinkedHashSet<>());
         if (switchBackup.isChecked()) {
             for (String uriString : exclusionList) {
@@ -616,8 +627,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        System.out.println(requestCode);
-        System.out.println(resultCode);
         if (requestCode == REQUEST_CODE_OPEN_FOLDER && resultCode == Activity.RESULT_OK) {
             if (data != null && data.getData() != null) {
                 pastaSelecionada = data.getData();
@@ -635,128 +644,34 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
-    TextView quantidadeImagens;
-
-    private void coisaDeAndroidR(){
-        /*
-        String[] projection = new String[]{
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.MIME_TYPE,
-                MediaStore.Images.Media.RELATIVE_PATH
-        };
-
-        String selection = MediaStore.Images.Media.RELATIVE_PATH + "=?";
-        String[] selectionArgs = new String[]{"WhatsApp/Media/WhatsApp Images"};
-        //String[] selectionArgs = new String[]{"/Android/media/com.whatsapp/WhatsApp/Media"};
-
-        try (Cursor cursor = getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                null
-        )) {
-            System.out.println(cursor);
-            System.out.println(cursor.moveToNext());
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
-                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
-                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
-
-                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                    // Acessar o arquivo aqui
-                    System.out.println(name);
-                    //exibirImagemPastaSelecionada(uri);
-                }
-            }
-        }
-
-         */
-        int i = 0;
-        quantidadeImagens = findViewById(R.id.quantidade_imagens);
-        //quantidadeImagens.setText("Número de arquivos\n" + String.valueOf(i));
-
-        String[] projection = new String[]{
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.MIME_TYPE
-        };
-
-        String selection = MediaStore.Images.Media.RELATIVE_PATH + "=?";
-        String[] selectionArgs = new String[]{"WhatsApp/Media/WhatsApp Images"};
-
-        try (Cursor cursor = getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                null
-        )) {
-            if (cursor != null) {
-                System.out.println(cursor.moveToNext());
-                while (cursor.moveToNext()) {
-                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
-                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
-                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
-
-                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                    // Acessar o arquivo aqui
-                    //exibirImagemPastaSelecionada(uri);
-                    System.out.println(i);
-                    i++;
-                }
-                quantidadeImagens.setText("Número de arquivos\n" + String.valueOf(i));
-            }
-        }
-
+    private void exibidorDePasta(Uri data) {
+        cuidadoPastaRaiz = findViewById(R.id.cuidado_pasta_raiz);
         layoutImagens = findViewById(R.id.layout_imagens);
         constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
-        zoomIn = findViewById(R.id.zoom_in);
-        zoomOut = findViewById(R.id.zoom_out);
+        layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
 
+        // Continuar com o processamento da pasta selecionada
         layoutImagens.setVisibility(View.VISIBLE);
         constraintIconesBaixo.setVisibility(View.VISIBLE);
         zoomIn.setVisibility(View.VISIBLE);
         zoomOut.setVisibility(View.VISIBLE);
-        arrayDeArquivos = null;
 
-        Uri confio;
-
-        /*
-        try (Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, null)) {
-            System.out.println(cursor);
-            if (cursor != null) {
-                System.out.println(cursor.moveToNext());
-                while (cursor.moveToNext()) {
-                    long id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID));
-                    System.out.println(id);
-                    String name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME));
-                    String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.MIME_TYPE));
-
-                    Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                    // Acessar o arquivo aqui
-                    System.out.println(uri.buildUpon());
-                    exibirImagemPastaSelecionada(uri);
-                }
-            }
-
-        }
-
-         */
-        /*
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-
-        } else {
-            confio = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AWhatsApp%2FMedia%2FWhatsApp%20Images");
-            System.out.println(confio);
-            exibirImagemPastaSelecionada(confio);
-        }
-
-         */
-
+        exibirImagemPastaSelecionada(data);
     }
+
+    //Código criado para no futuro criar botões que carreguem direto em uma pasta sem navegar
+    //pelo gerenciador de arquivo, e se preparar para caso o android seja 10- ou 11+
+    /*
+    private void coisaDeAndroidR(){
+
+        arrayDeArquivos = null;
+        String minhaString = "content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2FWhatsApp%20Images";
+        Uri minhaUri = Uri.parse(minhaString);
+
+        exibidorDePasta(minhaUri);
+    }
+
+     */
 
     private final ActivityResultLauncher<Intent> manageExternalStorageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -774,7 +689,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
     );
 
-    TextView textUri;
+    //TextView textUri;
 
     TextView cuidadoPastaRaiz;
     private final ActivityResultLauncher<Intent> selecionarPastaLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -784,7 +699,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 constraintIconesBaixo = findViewById(R.id.constraint_icones_baixo);
                 layoutPastaCentral = findViewById(R.id.constraintLayout_PastaCentral);
 
-                textUri = findViewById(R.id.text_uri);
+                //Serve para debug a linha abaixo
+                //textUri = findViewById(R.id.text_uri);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     if (Environment.isExternalStorageManager()) {
@@ -804,17 +720,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                                     pastaSelecionada = data.getData();
 
                                     getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                                    // Continuar com o processamento da pasta selecionada
-                                    layoutImagens.setVisibility(View.VISIBLE);
-                                    constraintIconesBaixo.setVisibility(View.VISIBLE);
-                                    zoomIn.setVisibility(View.VISIBLE);
-                                    zoomOut.setVisibility(View.VISIBLE);
-
-                                    System.out.println(data.getData().toString());
-                                    String sla = data.getData().toString();
-                                    textUri.setText(sla);
-                                    exibirImagemPastaSelecionada(data.getData());
+                                    exibidorDePasta(data.getData());
+                                    //textUri.setText(data.getData().toString());
                                 }
                             }
                         }
@@ -838,22 +745,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                             Intent data = result.getData();
                             if (data != null && data.getData() != null) {
                                 pastaSelecionada = data.getData();
-                                System.out.println(pastaSelecionada);
 
                                 getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                                // Continuar com o processamento da pasta selecionada
-
-                                layoutImagens.setVisibility(View.VISIBLE);
-                                constraintIconesBaixo.setVisibility(View.VISIBLE);
-                                zoomIn.setVisibility(View.VISIBLE);
-                                zoomOut.setVisibility(View.VISIBLE);
-
-                                System.out.println(data.getData().toString());
-                                String sla = data.getData().toString();
-                                textUri.setText(sla);
-
-                                exibirImagemPastaSelecionada(data.getData());
+                                exibidorDePasta(pastaSelecionada);
+                                //textUri.setText(data.getData().toString());
                             }
                         }
                     }
@@ -884,6 +779,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         arrayDeArquivos = null;
+        System.out.println(intent);
         selecionarPastaLauncher.launch(intent);
     }
 
@@ -899,13 +795,13 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     //Controla e ordena os arquivos da pasta
     private void exibirImagemPastaSelecionada(Uri pastaSelecionada) {
 
+        System.out.println("Pasta certa -> " + pastaSelecionada);
         carregado = findViewById(R.id.carregado);
         if (pastaSelecionada != null) {
 
             arquivos = DocumentFile.fromTreeUri(this, pastaSelecionada);
 
             assert arquivos != null;
-            DocumentFile[] listaDeArquivos;
             listaDeArquivos = arquivos.listFiles();
 
             arrayDeArquivos = listaDeArquivos;
@@ -1313,15 +1209,39 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     }
 
     private boolean isImagem(String extensao) {
-        return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg") || extensao.endsWith("webp");
+        String[] extensoesImagem = {"jpg", "png", "jpeg", "webp", "gif", "bmp", "raw", "svg"};
+        extensao = extensao.toLowerCase();
+
+        for (String extensaoImagem : extensoesImagem) {
+            if (extensao.endsWith(extensaoImagem)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isVideo(String extensao) {
-        return extensao.endsWith("mp4") || extensao.endsWith("3gp") || extensao.equalsIgnoreCase(".wmv");
+        String[] extensoesVideo = {"mp4", "3gp", "wmv", "mov", "avi", "mkv", "avchd", "webm", "mpeg-2"};
+        extensao = extensao.toLowerCase();
+
+        for (String extensaoVideo : extensoesVideo) {
+            if (extensao.endsWith(extensaoVideo)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAudio(String extensao) {
-        return extensao.endsWith("wav") || extensao.endsWith("mp3") || extensao.endsWith("m4a") || extensao.endsWith("wma");
+        String[] extensoesAudio = {"wav", "mp3", "m4a", "wma", "pcm", "flac"};
+        extensao = extensao.toLowerCase();
+
+        for (String extensaoAudio : extensoesAudio) {
+            if (extensao.endsWith(extensaoAudio)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

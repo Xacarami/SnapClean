@@ -434,8 +434,7 @@
             android:id="@+id/constraintLayout_PastaCentral"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:layout_constraintBottom_toBottomOf="@+id/hello"
+            app:layout_constraintBottom_toBottomOf="@+id/layout_imagens"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -481,10 +480,22 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/debug"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="25dp"
-        android:layout_marginEnd="25dp">
+        android:layout_marginEnd="25dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/android_versao"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Versão Android: 0"
+            android:textColor="#FFFFFF"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/botao_whatsapp" />
 
         <TextView
             android:id="@+id/text_uri"
@@ -492,22 +503,9 @@
             android:layout_height="wrap_content"
             android:text="Uri"
             android:textColor="#FFFFFF"
-            app:layout_constraintBottom_toTopOf="@+id/quantidade_imagens"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <TextView
-            android:id="@+id/quantidade_imagens"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
-            android:text="Numero de arquivos:\n0"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            app:layout_constraintBottom_toTopOf="@id/botao_whatsapp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            tools:layout_editor_absoluteY="113dp" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/botao_whatsapp"

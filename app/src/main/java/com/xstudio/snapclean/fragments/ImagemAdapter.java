@@ -106,15 +106,39 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
 
 
     private boolean isImagem(String extensao) {
-        return extensao.endsWith("jpg") || extensao.endsWith("png") || extensao.endsWith("jpeg");
+        String[] extensoesImagem = {"jpg", "png", "jpeg", "webp", "gif", "bmp", "raw", "svg"};
+        extensao = extensao.toLowerCase();
+
+        for (String extensaoImagem : extensoesImagem) {
+            if (extensao.endsWith(extensaoImagem)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isVideo(String extensao) {
-        return extensao.endsWith("mp4") || extensao.endsWith("3gp") || extensao.equalsIgnoreCase(".wmv");
+        String[] extensoesVideo = {"mp4", "3gp", "wmv", "mov", "avi", "mkv", "avchd", "webm", "mpeg-2"};
+        extensao = extensao.toLowerCase();
+
+        for (String extensaoVideo : extensoesVideo) {
+            if (extensao.endsWith(extensaoVideo)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAudio(String extensao) {
-        return extensao.endsWith("wav") || extensao.endsWith("mp3") || extensao.endsWith("m4a") || extensao.endsWith("wma");
+        String[] extensoesAudio = {"wav", "mp3", "m4a", "wma", "pcm", "flac"};
+        extensao = extensao.toLowerCase();
+
+        for (String extensaoAudio : extensoesAudio) {
+            if (extensao.endsWith(extensaoAudio)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
