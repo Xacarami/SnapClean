@@ -140,7 +140,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         //Já garante a permissão de primeira
         if (ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            //Solicitando permissões
+            //Solicitando permissões Android 11+
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
                     // Permissão concedida
@@ -154,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     requestManageExternalStoragePermission();
                 }
             } else {
+
                 System.out.println("Permissão negada");
                 acessoNaPasta = false;
                 Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
@@ -208,8 +210,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-            }
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
 
             @Override
             public void onDrawerOpened(@NonNull View drawerView) {
@@ -230,8 +231,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             }
 
             @Override
-            public void onDrawerStateChanged(int newState) {
-            }
+            public void onDrawerStateChanged(int newState) {}
         });
 
 
@@ -690,23 +690,25 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (Environment.isExternalStorageManager()) {
                 // Permissão concedida
-                if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }") || result.getData().toString().equals("Intent { dat=content://com.android.providers.downloads.documents/tree/downloads flg=0xc3 }")) {
-                    cuidadoPastaProtegida.setVisibility(View.VISIBLE);
-                    layoutImagens.setVisibility(View.GONE);
-                    constraintIconesBaixo.setVisibility(View.GONE);
-                    zoomIn.setVisibility(View.GONE);
-                    zoomOut.setVisibility(View.GONE);
-                    layoutPastaCentral.setVisibility(View.VISIBLE);
-                } else {
-                    cuidadoPastaProtegida.setVisibility(View.GONE);
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        if (data != null && data.getData() != null) {
-                            pastaSelecionada = data.getData();
-
-                            getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            exibidorDePasta(data.getData());
-                            //textUri.setText(data.getData().toString());
+                Intent data = result.getData();
+                if (data != null) {
+                    String dataString = data.toString();
+                    if (dataString.equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }") || dataString.equals("Intent { dat=content://com.android.providers.downloads.documents/tree/downloads flg=0xc3 }")) {
+                        cuidadoPastaProtegida.setVisibility(View.VISIBLE);
+                        layoutImagens.setVisibility(View.GONE);
+                        constraintIconesBaixo.setVisibility(View.GONE);
+                        zoomIn.setVisibility(View.GONE);
+                        zoomOut.setVisibility(View.GONE);
+                        layoutPastaCentral.setVisibility(View.VISIBLE);
+                    } else {
+                        cuidadoPastaProtegida.setVisibility(View.GONE);
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            if (data.getData() != null) {
+                                pastaSelecionada = data.getData();
+                                getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                exibidorDePasta(data.getData());
+                                //textUri.setText(data.getData().toString());
+                            }
                         }
                     }
                 }
@@ -714,27 +716,33 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 // Permissão negada
                 requestManageExternalStoragePermission();
             }
+
         } else {
             System.out.println("API menor que Android 11");
             //System.out.println(result.getData().toString());
             //Proibindo acesso à pasta raiz, evitando que delete arquivos essenciais
-            if (result.getData() != null && result.getData().toString().equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }") || result.getData().toString().equals("Intent { dat=content://com.android.providers.downloads.documents/tree/downloads flg=0xc3 }")) {
-                cuidadoPastaProtegida.setVisibility(View.VISIBLE);
-                layoutImagens.setVisibility(View.GONE);
-                constraintIconesBaixo.setVisibility(View.GONE);
-                zoomIn.setVisibility(View.GONE);
-                zoomOut.setVisibility(View.GONE);
-                layoutPastaCentral.setVisibility(View.VISIBLE);
-            } else {
-                cuidadoPastaProtegida.setVisibility(View.GONE);
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data != null && data.getData() != null) {
-                        pastaSelecionada = data.getData();
+            Intent data = result.getData();
+            if (data != null) {
+                String dataString = data.toString();
+                if (dataString.equals("Intent { dat=content://com.android.externalstorage.documents/tree/primary: flg=0xc3 }") || dataString.equals("Intent { dat=content://com.android.providers.downloads.documents/tree/downloads flg=0xc3 }")) {
+                    cuidadoPastaProtegida.setVisibility(View.VISIBLE);
+                    layoutImagens.setVisibility(View.GONE);
+                    constraintIconesBaixo.setVisibility(View.GONE);
+                    zoomIn.setVisibility(View.GONE);
+                    zoomOut.setVisibility(View.GONE);
+                    layoutPastaCentral.setVisibility(View.VISIBLE);
 
-                        getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        exibidorDePasta(pastaSelecionada);
-                        //textUri.setText(data.getData().toString());
+                } else {
+                    cuidadoPastaProtegida.setVisibility(View.GONE);
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        //Intent data = result.getData();
+                        if (data.getData() != null) {
+                            pastaSelecionada = data.getData();
+
+                            getContentResolver().takePersistableUriPermission(pastaSelecionada, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            exibidorDePasta(pastaSelecionada);
+                            //textUri.setText(data.getData().toString());
+                        }
                     }
                 }
             }
@@ -1203,8 +1211,6 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 editor.putBoolean("tutorial_shown", true);
                 editor.apply();
             }
-
-
 
             resultado.set(0);
             ajuste = resultado.get();
