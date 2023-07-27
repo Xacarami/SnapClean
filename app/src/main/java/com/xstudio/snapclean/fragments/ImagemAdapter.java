@@ -10,6 +10,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,26 +42,39 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         this.botaoApagarTudo = botaoApagarTudo;
     }
 
-    private void atualizarBotoes() {
+    public void atualizarBotoes() {
         if (botaoRecuperar != null) {
-            if (listaDeSelecionados.isEmpty()) {
+            if (listaDeExclusao.size() == 0) {
                 botaoRecuperar.setText("Recuperar");
                 botaoRecuperar.setEnabled(false);
                 botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
             } else {
                 botaoRecuperar.setEnabled(true);
                 botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(0xFF289500));
+                if (getListaDeSelecionados().isEmpty()) {
+                    botaoRecuperar.setText("Recuperar tudo");
+                } else {
+                    botaoRecuperar.setText("Recuperar");
+                }
             }
         }
+
         if (botaoApagarTudo != null) {
-            if (listaDeSelecionados.isEmpty()) {
-                botaoApagarTudo.setText("Apagar tudo");
-            } else {
+            if (listaDeExclusao.size() == 0) {
                 botaoApagarTudo.setText("Apagar");
+                botaoApagarTudo.setEnabled(false);
+                botaoApagarTudo.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
+            } else {
+                botaoApagarTudo.setEnabled(true);
+                botaoApagarTudo.setBackgroundTintList(ColorStateList.valueOf(0xFF0101));
+                if (listaDeSelecionados.isEmpty()) {
+                    botaoApagarTudo.setText("Apagar tudo");
+                } else {
+                    botaoApagarTudo.setText("Apagar");
+                }
             }
         }
     }
-
 
     private final OnItemClickListener listener;
 
@@ -81,7 +95,6 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
         this.listaDeExclusao = listaDeExclusao;
         this.listener = listener;
     }
-
 
     @NonNull
     @Override

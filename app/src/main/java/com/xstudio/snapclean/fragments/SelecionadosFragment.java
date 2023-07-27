@@ -1,3 +1,4 @@
+
 package com.xstudio.snapclean.fragments;
 
 import android.app.AlertDialog;
@@ -83,15 +84,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         adapter.setBotoes(botaoRecuperar, botaoApagarTudo);
         recyclerView.setAdapter(adapter);
 
-        if (adapter.getListaDeSelecionados().isEmpty()) {
-            botaoRecuperar.setText("Recuperar");
-            botaoRecuperar.setEnabled(false);
-            botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
-        } else {
-            botaoRecuperar.setEnabled(true);
-            botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(0xFF289500));
-        }
-
+        adapter.atualizarBotoes();
 
         imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
 
@@ -111,31 +104,57 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         });
 
         botaoRecuperar.setOnClickListener(v -> {
-            System.out.println("Recuperar");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setTitle("Recuperar imagens");
-            builder.setMessage("Tem certeza de que deseja recuperar as imagens selecionadas?");
-            builder.setPositiveButton("Sim", (dialog, which) -> {
-                // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
-                System.out.println("SIM");
-                ArrayList<DocumentFile> listaDeSelecionados = adapter.getListaDeSelecionados();
-                for (DocumentFile recuperado : listaDeSelecionados) {
-                    listaDeExclusao.remove(recuperado);
-                    atualizarListaDeExclusao(listaDeExclusao);
-                    if (listener != null) {
-                        listener.onArquivoRecuperado(recuperado);
-                    } else {
-                        Log.d("SelecionadosFragment", "Listener é nulo");
+            if (adapter.getListaDeSelecionados().size() > 0) {
+                System.out.println("Recuperar");
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Recuperar imagens");
+                builder.setMessage("Tem certeza de que deseja recuperar as imagens selecionadas?");
+                builder.setPositiveButton("Sim", (dialog, which) -> {
+                    // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
+                    System.out.println("SIM");
+                    ArrayList<DocumentFile> listaDeSelecionados = adapter.getListaDeSelecionados();
+                    for (DocumentFile recuperado : listaDeSelecionados) {
+                        listaDeExclusao.remove(recuperado);
+                        atualizarListaDeExclusao(listaDeExclusao);
+                        if (listener != null) {
+                            listener.onArquivoRecuperado(recuperado);
+                        } else {
+                            Log.d("SelecionadosFragment", "Listener é nulo");
+                        }
                     }
-                }
-                adapter.desselecionarTodas();
-                textificandoTotal = "Quantidade: " + listaDeExclusao.size();
-                quantidadeTotal.setText(textificandoTotal);
-            });
-            builder.setNegativeButton("Não", (dialog, which) -> {
-                // Usuário escolheu não recuperar as imagens
-            });
-            builder.show();
+                    adapter.desselecionarTodas();
+                    textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                    quantidadeTotal.setText(textificandoTotal);
+                    backupDaLista();
+                });
+                builder.setNegativeButton("Não", (dialog, which) -> {
+                    // Usuário escolheu não recuperar as imagens
+                });
+                builder.show();
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Recuperar imagens");
+                builder.setMessage("Tem certeza de que deseja recuperar todas as imagens?");
+                builder.setPositiveButton("Sim", (dialog, which) -> {
+                    // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
+                    System.out.println("SIM");
+                    List<DocumentFile> temp = new ArrayList<>(listaDeExclusao);
+                    for (DocumentFile arquivo : temp) {
+                        if (arquivo.exists()) {
+                            listaDeExclusao.remove(arquivo);
+                            atualizarListaDeExclusao(listaDeExclusao);
+                        }
+                    }
+                    adapter.desselecionarTodas();
+                    textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                    quantidadeTotal.setText(textificandoTotal);
+                    backupDaLista();
+                });
+                builder.setNegativeButton("Não", (dialog, which) -> {
+                    // Usuário escolheu não recuperar as imagens
+                });
+                builder.show();
+            }
         });
 
         botaoApagarTudo.setOnClickListener(v -> {
@@ -161,6 +180,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                     adapter.desselecionarTodas();
                     textificandoTotal = "Quantidade: " + listaDeExclusao.size();
                     quantidadeTotal.setText(textificandoTotal);
+                    backupDaLista();
                 });
 
                 builder.setNegativeButton("Não", (dialog, which) -> {
@@ -194,6 +214,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         adapter.desselecionarTodas();
                         textificandoTotal = "Quantidade: " + listaDeExclusao.size();
                         quantidadeTotal.setText(textificandoTotal);
+                        backupDaLista();
                     });
                     builderGarantia.setNegativeButton("Não", (dialogo, whichh) -> {
                         // Usuário escolheu não apagar todas as imagens
@@ -208,7 +229,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 });
                 builder.show();
             }
-
         });
     }
 
@@ -220,6 +240,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
         ConstraintLayout layoutPrincipal = getActivity().findViewById(R.id.layout_principal);
         ImageButton voltarSelecionados = rootView.findViewById(R.id.voltar_selecionados);
+        numeroLixeira = getActivity().findViewById(R.id.numero_lixeira);
 
         voltarSelecionados.setOnClickListener(v -> {
             layoutPrincipal.setVisibility(View.VISIBLE);
@@ -227,11 +248,20 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.remove(SelecionadosFragment.this);
             fragmentTransaction.commit();
+            numeroLixeira.setText(String.valueOf(listaDeExclusao.size()));
+            backupDaLista();
             System.out.println("Botao voltar foi clicado");
         });
         return rootView;
     }
 
+    private void backupDaLista(){
+        //Garantir backup
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            mainActivity.saveExclusionList();
+        }
+    }
 
     //passar lista atualizada para a main
     public interface OnArquivoRecuperadoListener {
@@ -243,7 +273,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     public void setOnArquivoRecuperadoListener(OnArquivoRecuperadoListener listener) {
         this.listener = listener;
     }
-
 
     private boolean isImagem(String extensao) {
         String[] extensoesImagem = {"jpg", "png", "jpeg", "webp", "gif", "bmp", "raw", "svg"};
@@ -323,7 +352,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         }
     };
 
-
+    TextView numeroLixeira;
     @Override
     public void onBotaoImagemClicked(DocumentFile arquivo) {
         String caminhoArquivo = arquivo.getUri().toString();
@@ -350,7 +379,6 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         textoAviso = getView().findViewById(R.id.texto_aviso_tela_inteira);
         setaBaixo = getView().findViewById(R.id.ic_seta_baixo);
         textoNomeArquivo = getView().findViewById(R.id.texto_nome_arquivo_tela_inteira);
-        //numeroLixeira = getView().findViewById(R.id.numero_lixeira);
         tempoAudioMaximo = getView().findViewById(R.id.tempo_audio_maximo_tela_inteira);
         tempoAudioPercorrido = getView().findViewById(R.id.tempo_audio_percorrido_tela_inteira);
         nomeAudio = getView().findViewById(R.id.nome_audio_tela_inteira);

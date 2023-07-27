@@ -1,6 +1,7 @@
 package com.xstudio.snapclean;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.content.ContentValues.TAG;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -33,6 +34,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -49,6 +51,15 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
 import com.xstudio.snapclean.fragments.Tutorial;
 
@@ -120,11 +131,20 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     //private String meuEstado;
     DocumentFile[] listaDeArquivos;
     //private ArrayList<Uri> listaDeImagens;
+    private InterstitialAd mInterstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Ads do AdMob
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {}
+        });
+
+        carregaAd();
 
         //hello = findViewById(R.id.hello);
 
@@ -496,6 +516,39 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         });
     }
 
+    AdRequest adRequest = new AdRequest.Builder().build();
+
+    public void carregaAd(){
+        InterstitialAd.load(this,"ca-app-pub-6308102348315332/3641604482", adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        mInterstitialAd = interstitialAd;
+                        Log.i(TAG, "onAdLoaded");
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.d(TAG, loadAdError.toString());
+                        mInterstitialAd = null;
+                    }
+                }
+        );
+    }
+
+    public void mostraAd(){
+        if (mInterstitialAd != null) {
+            mInterstitialAd.show(this);
+            carregaAd();
+        } else {
+            Log.d("TAG", "The interstitial ad wasn't ready yet.");
+        }
+        controladorDeAd = 0;
+    }
+
     //Gerencia a permissão de visualizar e escrever os arquivos do usuário
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -544,7 +597,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     //toda vez que saveExclusionList é chamado, o backup se atualiza com a listaDeExclusao
     Set<String> exclusionList = new LinkedHashSet<>();
 
-    private void saveExclusionList() {
+    public void saveExclusionList() {
         switchBackup = findViewById(R.id.switchBackup);
         if (switchBackup.isChecked()) {
             exclusionList.clear();
@@ -802,6 +855,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         }
     }
 
+    int controladorDeAd = 0;
+
     public void mostrarArquivosManipulaveis() {
         imageView = findViewById(R.id.view_imagem);
         videoView = findViewById(R.id.view_video);
@@ -817,6 +872,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             } else if (v.getId() == R.id.aceitar_imagem) {
                 guardandoArquivo();
             } else if (v.getId() == R.id.voltar_imagem) {
+                controladorDeAd -= 2;
                 int indexImagemAnterior = imagensCarregadas - 2;
                 if (indexImagemAnterior >= 0) {
                     DocumentFile imagemAnterior = arrayDeArquivos[indexImagemAnterior];
@@ -967,6 +1023,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     //Toda vez que apertar um botão ou selecionar uma pasta, continuaLoop é chamado
     private void continuarLoop(int quantidadeDeImagens, int ajuste) {
 
+        controladorDeAd++;
+
         autoplaySwitch = findViewById(R.id.switchAutoPlay);
         constraintAudio = findViewById(R.id.constraint_audio);
         layoutImagens.setVisibility(View.VISIBLE);
@@ -983,6 +1041,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         iconeMaisImagens = findViewById(R.id.abrir_mais_imagens);
         botaoAvancar = findViewById(R.id.aceitar_imagem);
         botaoExcluir = findViewById(R.id.negar_imagem);
+        botaoVoltar = findViewById(R.id.voltar_imagem);
 
         botaoVoltar.setVisibility(View.VISIBLE);
         iconeMaisImagens.setVisibility(View.VISIBLE);
@@ -1005,6 +1064,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             String caminhoArquivo = arquivo.getUri().toString();
             String extensao = arquivo.getName();
             arquivoAtual.set(arquivo);
+
+            if (controladorDeAd % 25 == 0 && controladorDeAd != 0){
+                mostraAd();
+            }
 
             if (arquivo.getType() != null && extensao != null) {
                 if (isImagem(extensao)) {
