@@ -1,4 +1,100 @@
 <resources>
     <string name="app_name">SnapClean</string>
     <string name="feliz">Feliz</string>
+    <string name="aindaNaoDisponivel">Not yet available. Expect an update.</string>
+    <string name="pedindoAcesso">It is necessary to accept the access permissions to the folders!</string>
+
+    <string name="mensagemAposRecusaDePermissoes">This application needs permission to access your folders to function correctly. Please grant the permission.\nIf you have pressed "Don't ask again," you will have to reinstall the application.</string>
+    <string name="botaoPositivoOk">OK</string>
+    <string name="botaoPositivoSim">Yes</string>
+    <string name="botaoNegativoNao">No</string>
+    <string name="tituloOrdenarArquivos">Sort files</string>
+    <string name="mensagemDesejaOrdenarPorData">Do you want to sort the files by modification date?\n\nIf not, they will load instantly!</string>
+    <string name="tituloOrdenandoArquivos">Sorting files</string>
+    <string name="mensagemAguardeEnquantoOrdena">Please wait while the files are being sorted…</string>
+    <string name="pressioneNovamenteParaSair">Press back again to exit</string>
+    <string name="extensaoNaoSuportada">Unsupported extension\nWe do not recommend deleting it.</string>
+    <string name="extensaoNaoEncontrada">Extension not found.\nIt could be a folder or a file without an extension.\nWe do not recommend deleting it.</string>
+    <string name="aPastaTerminou">The folder is empty! Your list of deleted files is still there. You can search for another folder.</string>
+
+    <string name="quantidade">Quantity:\ </string>
+    <string name="tituloRecuperarImagens">Recover images</string>
+    <string name="mensagemCertezaDeRecuperarImagensSelecionadas">Are you sure you want to recover the selected images?</string>
+    <string name="mensagemCertezaDeRecuperarTodasAsImagens">Are you sure you want to recover all the images?</string>
+    <string name="tituloApagarImagensSelecionadas">Delete selected files</string>
+    <string name="mensagemCertezaDeApagarImagensSelecionadas">Are you sure you want to delete the selected files?\nThe files cannot be recovered afterward!</string>
+    <string name="tituloApagarTudo">Delete All</string>
+    <string name="mensagemCertezaDeApagarTodasAsImagens">Are you sure you want to delete ALL the files?</string>
+    <string name="tituloAlerta">ALERT!</string>
+    <string name="mensagemArquivosNaoSeraoRecuperadosDepois">The files cannot be recovered afterward!</string>
+
+    <string name="botaoRecuperar">Recover</string>
+    <string name="botaoRecuperarTudo">Recover all</string>
+    <string name="botaoApagar">Delete</string>
+    <string name="botaoApagarTudo">Delete all</string>
+
+    <string name="tituloExcluirImagem">"Delete image"</string>
+    <string name="descricaoExcluirImagem">If you no longer want this image, just click this button, and it will be sent to the trash. You can still change your mind until you empty the trash.</string>
+    <string name="tituloGuardarImagem">Save image</string>
+    <string name="descricaoGuardarImagem">If you like this image and want to keep it on your device, click this button, and move on to the next one. You can come back and view the saved images at any time.</string>
+    <string name="tituloDeslizarImagem">Swipe image</string>
+    <string name="descricaoDeslizarImagem">You can also use the swipe gesture to decide what to do with the images. Swipe left if you want to delete or swipe right if you want to save.</string>
+    <string name="tituloDesfazerAcao">Undo action</string>
+    <string name="descricaoDesfazerAcao">Oops, changed your mind about deleting an image? Don\'t worry, you can click this button and go back to the previous image. That way, you can choose a new destination for it.</string>
+    <string name="tituloLixeira">Trash</string>
+    <string name="descricaoLixeira">Here are the images you deleted. You can review them and decide whether to permanently delete or recover them. But be careful: once you empty the trash, you won\'t be able to recover the images anymore.</string>
+
+    <string name="descricaoImageViewArquivo">File Image</string>
+    <string name="descricaoLogoAudioArquivo">Music Icon</string>
+    <string name="descricaoBotaoPauseAudioArquivo">Pause Button</string>
+    <string name="descricaoBotaoPlayAudioArquivo">Play Button</string>
+    <string name="nomeDoAudioArquivo">Audio Name</string>
+    <string name="temporizadorZeroAudioArquivo">0:00</string>
+    <string name="nomeDoArquivo">File Name</string>
+    <string name="descricaoIconeAlertaArquivo">Alert Icon</string>
+    <string name="descricaoIconeLixeira">Trash Icon</string>
+    <string name="descricaoIconeOpcoes">Options Icon</string>
+    <string name="descricaoIconeInfo">File Information Icon</string>
+    <string name="descricaoIconePasta">Choose a folder</string>
+
+    <string name="numeroInicialLixeira">0</string>
+    <string name="descricaoIconeAbrirMaisImagens">Open more images</string>
+    <string name="descricaoBotaoDeVoltarArquivo">Go back to file</string>
+    <string name="descricaoBotaoDeGuardarArquivo">Save File</string>
+    <string name="descricaoBotaoDeApagarArquivo">Delete File</string>
+    <string name="descricaoBotaoDeZoomOut">Zoom Out</string>
+    <string name="descricaoBotaoDeZoomIn">Zoom In</string>
+    <string name="botaoRestaurarZoom">Restore default size</string>
+    <string name="textoAcessandoPastaRaiz">Sorry, but Android does not allow the app to access this folder, as it contains important files for the device\'s operation. Please choose another allowed folder.</string>
+    <string name="textoSelecioneUmaPasta">Select a folder</string>
+
+    <string name="textoTesteVersao">Android Version: 0</string>
+    <string name="textoBotaoWhatsApp">WhatsApp</string>
+    <string name="textoCarregando">Loading…</string>
+    <string name="valorInicialCarregando">0</string>
+    <string name="valorFinalPadraoCarregando">10</string>
+    <string name="textoTesteUriDaPasta">URI</string>
+    <string name="textoSwitchPlayAutomatico">Auto Play</string>
+    <string name="textoSwitchSalvarBackup">Save Deleted Backups</string>
+    <string name="textoRodapeSideBarInicial">Newly launched app - more features are coming soon</string>
+    <string name="textoRodapeSideBarCopyright">Copyright © 2023 XStudio Dev. All rights reserved.</string>
+    <string name="duasSetas">Two arrows</string>
+
+    <string name="textoSelecionadosParaRemocao">Selected for Removal</string>
+    <string name="descricaoBotaoSelecionarTodos">Icon to select all</string>
+    <string name="descricaoBotaoVoltarTelaInicial">Back to the main screen button</string>
+    <string name="descricaoBotaoMinimizarSetaParaBaixo">Minimize open file</string>
+    <string name="textoBotaoApagarTudo">Delete All</string>
+    <string name="textoBotaoRecuperarTudo">Recover All</string>
+    <string name="descricaoImagemAumentada">Enlarged image on the screen</string>
+    <string name="descricaoImagemLogoMusica">Music logo image</string>
+    <string name="textoPadraoNomeDoAudio">Audio Name</string>
+
+    <string name="descricaoQuadroDoArquivo">Square showing the file</string>
+    <string name="descricaoIconeSelecionadoDoArquivo">Selected File</string>
+    <string name="descricaoBotaoDeAumentarOArquivo">Button to enlarge the file</string>
+
+
+
+
 </resources>

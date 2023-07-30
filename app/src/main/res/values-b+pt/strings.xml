@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">SnapClean</string>
+    <string name="feliz">Feliz</string>
+    <string name="aindaNaoDisponivel">Ainda não disponível. Espere uma atualização.</string>
+    <string name="pedindoAcesso">É necessário aceitar as permissões de acesso às pastas!</string>
+
+    <string name="mensagemAposRecusaDePermissoes">Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.</string>
+    <string name="botaoPositivoOk">OK</string>
+    <string name="botaoPositivoSim">Sim</string>
+    <string name="botaoNegativoNao">Não</string>
+    <string name="tituloOrdenarArquivos">Ordenar arquivos</string>
+    <string name="mensagemDesejaOrdenarPorData">Deseja ordenar os arquivos por data de modificação?\n\nCaso não, carregará instantâneamente!</string>
+    <string name="tituloOrdenandoArquivos">Ordenando arquivos</string>
+    <string name="mensagemAguardeEnquantoOrdena">Aguarde enquanto os arquivos são ordenados…</string>
+    <string name="pressioneNovamenteParaSair">Pressione voltar novamente para sair</string>
+    <string name="extensaoNaoSuportada">Extensão não suportada\nNão recomendamos que exclua.</string>
+    <string name="extensaoNaoEncontrada">Extensão não encontrada.\nPode ser uma pasta ou arquivo sem extensão.\nNão recomendamos que exclua.</string>
+    <string name="aPastaTerminou">A pasta terminou! Sua lista de excluídos ainda está lá. Você pode procurar outra pasta.</string>
+
+    <string name="quantidade">Quantidade:\ </string>
+    <string name="tituloRecuperarImagens">Recuperar imagens</string>
+    <string name="mensagemCertezaDeRecuperarImagensSelecionadas">Tem certeza de que deseja recuperar as imagens selecionadas?</string>
+    <string name="mensagemCertezaDeRecuperarTodasAsImagens">Tem certeza de que deseja recuperar todas as imagens?</string>
+    <string name="tituloApagarImagensSelecionadas">Apagar arquivos selecionados</string>
+    <string name="mensagemCertezaDeApagarImagensSelecionadas">Tem certeza de que deseja apagar os arquivos selecionados?\nOs aquivos não poderão ser recuperados depois!</string>
+    <string name="tituloApagarTudo">Apagar Tudo</string>
+    <string name="mensagemCertezaDeApagarTodasAsImagens">Tem certeza de que deseja apagar TODOS os arquivos?</string>
+    <string name="tituloAlerta">ALERTA!</string>
+    <string name="mensagemArquivosNaoSeraoRecuperadosDepois">Os aquivos não poderão ser recuperados depois!</string>
+
+    <string name="botaoRecuperar">Recuperar</string>
+    <string name="botaoRecuperarTudo">Recuperar tudo</string>
+    <string name="botaoApagar">Apagar</string>
+    <string name="botaoApagarTudo">Apagar tudo</string>
+
+    <string name="tituloExcluirImagem">"Excluir imagem"</string>
+    <string name="descricaoExcluirImagem">Se você não quer mais essa imagem, basta clicar neste botão e ela será enviada para a lixeira. Você ainda pode mudar de ideia depois, mas só até esvaziar a lixeira.</string>
+    <string name="tituloGuardarImagem">Guardar imagem</string>
+    <string name="descricaoGuardarImagem">Se você gostou dessa imagem e quer mantê-la no seu dispositivo, clique neste botão e passe para a próxima. Você pode voltar e ver as imagens guardadas a qualquer momento.</string>
+    <string name="tituloDeslizarImagem">Deslizar imagem</string>
+    <string name="descricaoDeslizarImagem">Você também pode usar o gesto de deslizar para decidir o que fazer com as imagens. Deslize para a esquerda se quiser excluir, ou para a direita se quiser guardar.</string>
+    <string name="tituloDesfazerAcao">Desfazer ação</string>
+    <string name="descricaoDesfazerAcao">Ops, você se arrependeu de ter excluído uma imagem? Não se preocupe, você pode clicar neste botão e voltar para a imagem anterior. Assim, você pode escolher um novo destino para ela.</string>
+    <string name="tituloLixeira">Lixeira</string>
+    <string name="descricaoLixeira">Aqui estão as imagens que você excluiu. Você pode revisá-las e decidir se quer apagá-las definitivamente do seu aparelho ou recuperá-las. Mas cuidado: uma vez que você esvaziar a lixeira, não poderá mais recuperar as imagens.</string>
+
+    <string name="descricaoImageViewArquivo">Imagem do arquivo</string>
+    <string name="descricaoLogoAudioArquivo">Icone de Música</string>
+    <string name="descricaoBotaoPauseAudioArquivo">Botão Pause</string>
+    <string name="descricaoBotaoPlayAudioArquivo">Botão Play</string>
+    <string name="nomeDoAudioArquivo">Nome do Audio</string>
+    <string name="temporizadorZeroAudioArquivo">0:00</string>
+    <string name="nomeDoArquivo">Nome do arquivo</string>
+    <string name="descricaoIconeAlertaArquivo">Icone de Alerta</string>
+    <string name="descricaoIconeLixeira">Lixeira</string>
+    <string name="descricaoIconeOpcoes">Opções</string>
+    <string name="descricaoIconeInfo">Informações do arquivo</string>
+    <string name="descricaoIconePasta">Escolha uma pasta</string>
+
+    <string name="numeroInicialLixeira">0</string>
+    <string name="descricaoIconeAbrirMaisImagens">Abrir mais imagens</string>
+    <string name="descricaoBotaoDeVoltarArquivo">Voltar arquivo</string>
+    <string name="descricaoBotaoDeGuardarArquivo">Guardar Arquivo</string>
+    <string name="descricaoBotaoDeApagarArquivo">Apagar Arquivo</string>
+    <string name="descricaoBotaoDeZoomOut">Zoom Out</string>
+    <string name="descricaoBotaoDeZoomIn">Zoom In</string>
+    <string name="botaoRestaurarZoom">Restaurar tamanho padrão</string>
+    <string name="textoAcessandoPastaRaiz">Desculpe, mas o Android não permite que o app acesse essa pasta, pois ela contém arquivos importantes para o funcionamento do aparelho. Por favor, escolha outra pasta que seja permitida.</string>
+    <string name="textoSelecioneUmaPasta">Selecione uma pasta</string>
+
+    <string name="textoTesteVersao">Versão Android: 0</string>
+    <string name="textoBotaoWhatsApp">WhatsApp</string>
+    <string name="textoCarregando">Carregando…</string>
+    <string name="valorInicialCarregando">0</string>
+    <string name="valorFinalPadraoCarregando">10</string>
+    <string name="textoTesteUriDaPasta">Uri</string>
+    <string name="textoSwitchPlayAutomatico">Play Automático</string>
+    <string name="textoSwitchSalvarBackup">Salvar Backup dos Excluídos</string>
+    <string name="textoRodapeSideBarInicial">App recém lançado - novas funcionalidades estão por vir</string>
+    <string name="textoRodapeSideBarCopyright">Copyright © 2023 XStudio Dev. Todos os direitos reservados.</string>
+    <string name="duasSetas">Duas setas</string>
+
+    <string name="textoSelecionadosParaRemocao">Selecionados para Remoção</string>
+    <string name="descricaoBotaoSelecionarTodos">Ícone para selecionar todos</string>
+    <string name="descricaoBotaoVoltarTelaInicial">Botão voltar para a tela principal</string>
+    <string name="descricaoBotaoMinimizarSetaParaBaixo">Minimizar arquivo aberto</string>
+    <string name="textoBotaoApagarTudo">Apagar tudo</string>
+    <string name="textoBotaoRecuperarTudo">Recuperar tudo</string>
+    <string name="descricaoImagemAumentada">Imagem aumentada na tela</string>
+    <string name="descricaoImagemLogoMusica">Imagem logo da música</string>
+    <string name="textoPadraoNomeDoAudio">Nome do Audio</string>
+
+    <string name="descricaoQuadroDoArquivo">Quadrado que mostra o arquivo</string>
+    <string name="descricaoIconeSelecionadoDoArquivo">Arquivo Selecionado</string>
+    <string name="descricaoBotaoDeAumentarOArquivo">Botão para aumentar o arquivo</string>
+</resources>

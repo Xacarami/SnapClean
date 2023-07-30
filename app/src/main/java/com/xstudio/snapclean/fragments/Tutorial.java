@@ -21,10 +21,26 @@ public class Tutorial {
         ImageView duasSetas = activity.findViewById(R.id.duas_setas);
         duasSetas.setVisibility(View.VISIBLE);
 
+        // Obter a string a partir do contexto da Activity
+        String tituloExcluirImagem = activity.getString(R.string.tituloExcluirImagem);
+        String descricaoExcluirImagem = activity.getString(R.string.descricaoExcluirImagem);
+        String tituloGuardarImagem = activity.getString(R.string.tituloGuardarImagem);
+        String descricaoGuardarImagem = activity.getString(R.string.descricaoGuardarImagem);
+        String tituloDeslizarImagem = activity.getString(R.string.tituloDeslizarImagem);
+        String descricaoDeslizarImagem = activity.getString(R.string.descricaoDeslizarImagem);
+        String tituloDesfazerAcao = activity.getString(R.string.tituloDesfazerAcao);
+        String descricaoDesfazerAcao = activity.getString(R.string.descricaoDesfazerAcao);
+        String tituloLixeira = activity.getString(R.string.tituloLixeira);
+        String descricaoLixeira = activity.getString(R.string.descricaoLixeira);
+
         // Mostra o tutorial
         new TapTargetSequence(activity)
                 .targets(
-                        TapTarget.forView(activity.findViewById(R.id.negar_imagem), "Excluir imagem", "Se você não quer mais essa imagem, basta clicar neste botão e ela será enviada para a lixeira. Você ainda pode mudar de ideia depois, mas só até esvaziar a lixeira.")
+                        TapTarget.forView(
+                                activity.findViewById(R.id.negar_imagem),
+                                        tituloExcluirImagem,
+                                        descricaoExcluirImagem
+                                )
                                 // All options below are optional
                                 .outerCircleColor(R.color.fundoTutorial)      // Specify a color for the outer circle
                                 .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle
@@ -40,7 +56,7 @@ public class Tutorial {
                                 .tintTarget(true)                   // Whether to tint the target view's color
                                 .transparentTarget(false)           // Specify whether the target is transparent (displays the content underneath)
                                 .targetRadius(40),                  // Specify the target radius (in dp)
-                        TapTarget.forView(activity.findViewById(R.id.aceitar_imagem), "Guardar imagem", "Se você gostou dessa imagem e quer mantê-la no seu dispositivo, clique neste botão e passe para a próxima. Você pode voltar e ver as imagens guardadas a qualquer momento.")
+                        TapTarget.forView(activity.findViewById(R.id.aceitar_imagem), tituloGuardarImagem, descricaoGuardarImagem)
                                 // All options below are optional
                                 .outerCircleColor(R.color.fundoTutorial)      // Specify a color for the outer circle
                                 .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle
@@ -57,7 +73,7 @@ public class Tutorial {
                                 .tintTarget(true)                   // Whether to tint the target view's color
                                 .transparentTarget(false)           // Specify whether the target is transparent (displays the content underneath)
                                 .targetRadius(40),                  // Specify the target radius (in dp)
-                        TapTarget.forView(activity.findViewById(R.id.duas_setas), "Deslizar imagem", "Você também pode usar o gesto de deslizar para decidir o que fazer com as imagens. Deslize para a esquerda se quiser excluir, ou para a direita se quiser guardar.")
+                        TapTarget.forView(activity.findViewById(R.id.duas_setas), tituloDeslizarImagem, descricaoDeslizarImagem)
                                 // All options below are optional
                                 .outerCircleColor(R.color.fundoTutorial)      // Specify a color for the outer circle
                                 .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle
@@ -73,7 +89,7 @@ public class Tutorial {
                                 .tintTarget(true)                   // Whether to tint the target view's color
                                 .transparentTarget(false)           // Specify whether the target is transparent (displays the content underneath)
                                 .targetRadius(40),                  // Specify the target radius (in dp)
-                        TapTarget.forView(activity.findViewById(R.id.voltar_imagem), "Desfazer ação", "Ops, você se arrependeu de ter excluído uma imagem? Não se preocupe, você pode clicar neste botão e voltar para a imagem anterior. Assim, você pode escolher um novo destino para ela.")
+                        TapTarget.forView(activity.findViewById(R.id.voltar_imagem), tituloDesfazerAcao, descricaoDesfazerAcao)
                                 // All options below are optional
                                 .outerCircleColor(R.color.fundoTutorial)      // Specify a color for the outer circle
                                 .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle
@@ -89,7 +105,7 @@ public class Tutorial {
                                 .tintTarget(false)                   // Whether to tint the target view's color
                                 .transparentTarget(false)           // Specify whether the target is transparent (displays the content underneath)
                                 .targetRadius(40),                  // Specify the target radius (in dp)
-                        TapTarget.forView(activity.findViewById(R.id.lixeira), "Lixeira", "Aqui estão as imagens que você excluiu. Você pode revisá-las e decidir se quer apagá-las definitivamente do seu aparelho ou recuperá-las. Mas cuidado: uma vez que você esvaziar a lixeira, não poderá mais recuperar as imagens.")
+                        TapTarget.forView(activity.findViewById(R.id.lixeira), tituloLixeira, descricaoLixeira)
                                 // All options below are optional
                                 .outerCircleColor(R.color.fundoTutorial)      // Specify a color for the outer circle
                                 .outerCircleAlpha(0.96f)            // Specify the alpha amount for the outer circle

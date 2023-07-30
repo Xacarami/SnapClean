@@ -10,7 +10,7 @@
         android:layout_width="110dp"
         android:layout_height="110dp"
         android:scaleType="centerCrop"
-        />
+        android:contentDescription="@string/descricaoQuadroDoArquivo" />
 
     <ImageView
         android:id="@+id/icone_selecao"
@@ -19,7 +19,7 @@
         android:layout_gravity="top|end"
         android:src="@mipmap/ic_selecionado_azul"
         android:visibility="gone"
-        />
+        android:contentDescription="@string/descricaoIconeSelecionadoDoArquivo" />
 
     <ImageButton
         android:id="@+id/aumentar_imagem"
@@ -30,7 +30,8 @@
         android:scaleType="centerInside"
         android:visibility="visible"
         app:srcCompat="@mipmap/ic_aumentar_imagem"
-        app:tint="#5065FF" />
+        app:tint="#5065FF"
+        android:contentDescription="@string/descricaoBotaoDeAumentarOArquivo" />
 
 
 

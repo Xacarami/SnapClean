@@ -51,13 +51,9 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.xstudio.snapclean.fragments.SelecionadosFragment;
@@ -97,10 +93,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     Button restaurarTamanho;
     Switch autoplaySwitch;
 
+    private final ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
     //O testeSeJaFoiCriado diz que não foi usado, mas é importante
     SelecionadosFragment testeSeJaFoiCriado;
     Boolean resetouPasta = false;
-    private final ArrayList<DocumentFile> listaDeExclusao = new ArrayList<>();
     FrameLayout layoutImagens;
     ConstraintLayout constraintIconesCima;
     ImageButton iconeMaisImagens;
@@ -122,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     float y1;
     float MIN_DISTANCE = 120;
     float alphaIcone = 0.05f;
+    SelecionadosFragment selecionadosFragment;
 
     private static final String[] STORAGE_PERMISSIONS = {READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final String[] MEDIA_PERMISSIONS = {Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO};
@@ -139,10 +136,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         setContentView(R.layout.activity_main);
 
         //Ads do AdMob
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {}
-        });
+        MobileAds.initialize(this, initializationStatus -> {});
 
         carregaAd();
 
@@ -175,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                 System.out.println("Permissão negada");
                 acessoNaPasta = false;
-                Toast.makeText(this, "É necessário aceitar as permissões de acesso às pastas!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.pedindoAcesso, Toast.LENGTH_SHORT).show();
                 ActivityCompat.requestPermissions(this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS);
 
                 //hello.setText("Permissões ainda não aceitas");
@@ -255,8 +249,10 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
         ImageView icLixeira1 = findViewById(R.id.lixeira);
         icLixeira1.setOnClickListener(view -> {
+            ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
+            layoutPrincipal.setVisibility(View.GONE);
             if (testeSeJaFoiCriado == null) {
-                SelecionadosFragment selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
+                selecionadosFragment = new SelecionadosFragment(listaDeExclusao);
                 selecionadosFragment.setOnArquivoRecuperadoListener(this);
                 getSupportFragmentManager().beginTransaction().replace(R.id.container_selecionados, selecionadosFragment).addToBackStack(null) // Adiciona o fragmento à pilha de retorno
                         .commit();
@@ -276,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         ImageButton iconeInfo = findViewById(R.id.info_button);
         iconeInfo.setOnClickListener(view -> {
             System.out.println("Ta clicando Infos");
-            Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, R.string.aindaNaoDisponivel, Toast.LENGTH_LONG).show();
         });
 
         //Adição futura para selecionar de forma mais rápida pastas específicas sem precisar navegar pelo gerenciador de arquivos
@@ -588,9 +584,9 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     private void showPermissionExplanationDialog() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Solicita as permissões
-            new AlertDialog.Builder(this).setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.").setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(this, MEDIA_PERMISSIONS, REQUEST_MEDIA_PERMISSIONS)).create().show();
+            new AlertDialog.Builder(this).setMessage(R.string.mensagemAposRecusaDePermissoes).setPositiveButton(R.string.botaoPositivoOk, (dialog, which) -> ActivityCompat.requestPermissions(this, MEDIA_PERMISSIONS, REQUEST_MEDIA_PERMISSIONS)).create().show();
         } else {
-            new AlertDialog.Builder(this).setMessage("Este aplicativo precisa de permissão para acessar suas pastas para funcionar corretamente. Por favor, conceda a permissão\nCaso tenha apertado em Não perguntar novamente, terá de reinstalar o aplicativo.").setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS)).create().show();
+            new AlertDialog.Builder(this).setMessage(R.string.mensagemAposRecusaDePermissoes).setPositiveButton(R.string.botaoPositivoOk, (dialog, which) -> ActivityCompat.requestPermissions(MainActivity.this, STORAGE_PERMISSIONS, REQUEST_STORAGE_PERMISSIONS)).create().show();
         }
     }
 
@@ -674,7 +670,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
     //Apenas uma mensagem padrão para algo que ainda não foi implementado
     public void colocarToast() {
-        Toast.makeText(MainActivity.this, "Ainda não disponível. Espere uma atualização.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, R.string.aindaNaoDisponivel, Toast.LENGTH_SHORT).show();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -814,8 +810,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
             pastaJaFoiSelecionada = true;
 
             AlertDialog.Builder builderDois = new AlertDialog.Builder(this);
-            builderDois.setTitle("Ordenar arquivos");
-            builderDois.setMessage("Deseja ordenar os arquivos por data de modificação?\n\nCaso não, carregará instantâneamente!");
+            builderDois.setTitle(R.string.tituloOrdenarArquivos);
+            builderDois.setMessage(R.string.mensagemDesejaOrdenarPorData);
             builderDois.setPositiveButton("Sim", (dialog, which) -> {
                 // Criar e exibir o ProgressBar
                 ProgressBar progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
@@ -826,8 +822,8 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                 Executor executor = Executors.newSingleThreadExecutor();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Ordenando arquivos");
-                builder.setMessage("Aguarde enquanto os arquivos são ordenados...");
+                builder.setTitle(R.string.tituloOrdenandoArquivos);
+                builder.setMessage(R.string.mensagemAguardeEnquantoOrdena);
                 builder.setView(progressBar);
                 AlertDialog dialogo = builder.create();
                 dialogo.show();
@@ -846,7 +842,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
                     });
                 });
             });
-            builderDois.setNegativeButton("Não", (dialog, which) -> {
+            builderDois.setNegativeButton(R.string.botaoNegativoNao, (dialog, which) -> {
                 // Coloque aqui o código que deve ser executado se o usuário escolher não ordenar os arquivos
                 mostrarArquivosManipulaveis();
             });
@@ -948,32 +944,45 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
     //Não fechar de primeira ao apertar o botão de volar do celular
     private long backPressedTime;
     private Toast backToast;
+    ImageView imagemTelaInteira;
+    ImageButton setaBaixo;
 
     @Override
     public void onBackPressed() {
-        //Fechar a selecionadosFragment
-        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            getSupportFragmentManager().popBackStack();
-            System.out.println("Fragment aberto?");
-        } else {
-            //Fechar a sidebar
-            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                drawerLayout.closeDrawer(GravityCompat.START);
-            } else {
-                //super.onBackPressed();
-                //fechar a MainActivity
-                if (backPressedTime + 2000 > System.currentTimeMillis()) {
-                    backToast.cancel();
-                    super.onBackPressed();
-                    return;
-                } else {
-                    backToast = Toast.makeText(getBaseContext(), "Pressione voltar novamente para sair", Toast.LENGTH_SHORT);
-                    backToast.show();
-                }
-                backPressedTime = System.currentTimeMillis();
-            }
+        imagemTelaInteira = findViewById(R.id.imagem_tela_inteira);
+        setaBaixo = findViewById(R.id.ic_seta_baixo);
 
+        //Fechar tela de arquivo aumentado
+        if (setaBaixo != null && setaBaixo.getVisibility() == View.VISIBLE) {
+            selecionadosFragment.minimizarTelaCheia();
+        } else {
+            //Fechar a selecionadosFragment
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                ConstraintLayout layoutPrincipal = findViewById(R.id.layout_principal);
+                layoutPrincipal.setVisibility(View.VISIBLE);
+                getSupportFragmentManager().popBackStack();
+                System.out.println("Fragment aberto?");
+            } else {
+                //Fechar a sidebar
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    //super.onBackPressed();
+                    //fechar a MainActivity
+                    if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                        backToast.cancel();
+                        super.onBackPressed();
+                        return;
+                    } else {
+                        backToast = Toast.makeText(getBaseContext(), R.string.pressioneNovamenteParaSair, Toast.LENGTH_SHORT);
+                        backToast.show();
+                    }
+                    backPressedTime = System.currentTimeMillis();
+                }
+
+            }
         }
+
     }
 
     ImageButton playButton;
@@ -1202,7 +1211,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                     extensaoDesconhecida.setVisibility(View.VISIBLE);
                     textoNomeArquivo.setText(arquivo.getName());
-                    textoAviso.setText("Extensão não suportada\nNão recomendamos que exclua.");
+                    textoAviso.setText(R.string.extensaoNaoSuportada);
                 }
             } else {
                 //Caso não tenha Extensão
@@ -1214,7 +1223,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
 
                 extensaoDesconhecida.setVisibility(View.VISIBLE);
                 textoNomeArquivo.setText(arquivo.getName());
-                textoAviso.setText("Extensão não encontrada.\nPode ser uma pasta ou arquivo sem extensão.\nNão recomendamos que exclua.");
+                textoAviso.setText(R.string.extensaoNaoEncontrada);
             }
 
             //Tutorial para a primeira vez, somente a primeira vez
@@ -1248,7 +1257,7 @@ public class MainActivity extends AppCompatActivity implements SelecionadosFragm
         // Verifica se é a última imagem da pasta
         if (imagensCarregadas > tamanhoDaLista) {
             // Exibe uma mensagem ao usuário
-            Toast.makeText(this, "A pasta terminou! Sua lista de excluídos ainda está lá. Você pode procurar outra pasta.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.aPastaTerminou, Toast.LENGTH_SHORT).show();
 
             voltarAoNormalTamanhoETransaltion();
             voltarIconesCimaAparecer();

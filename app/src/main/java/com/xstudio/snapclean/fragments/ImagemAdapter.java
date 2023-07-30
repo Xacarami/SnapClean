@@ -10,7 +10,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,32 +44,32 @@ public class ImagemAdapter extends RecyclerView.Adapter<ImagemAdapter.ViewHolder
     public void atualizarBotoes() {
         if (botaoRecuperar != null) {
             if (listaDeExclusao.size() == 0) {
-                botaoRecuperar.setText("Recuperar");
+                botaoRecuperar.setText(R.string.botaoRecuperar);
                 botaoRecuperar.setEnabled(false);
                 botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
             } else {
                 botaoRecuperar.setEnabled(true);
                 botaoRecuperar.setBackgroundTintList(ColorStateList.valueOf(0xFF289500));
                 if (getListaDeSelecionados().isEmpty()) {
-                    botaoRecuperar.setText("Recuperar tudo");
+                    botaoRecuperar.setText(R.string.botaoRecuperarTudo);
                 } else {
-                    botaoRecuperar.setText("Recuperar");
+                    botaoRecuperar.setText(R.string.botaoRecuperar);
                 }
             }
         }
 
         if (botaoApagarTudo != null) {
             if (listaDeExclusao.size() == 0) {
-                botaoApagarTudo.setText("Apagar");
+                botaoApagarTudo.setText(R.string.botaoApagar);
                 botaoApagarTudo.setEnabled(false);
                 botaoApagarTudo.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
             } else {
                 botaoApagarTudo.setEnabled(true);
                 botaoApagarTudo.setBackgroundTintList(ColorStateList.valueOf(0xFF0101));
                 if (listaDeSelecionados.isEmpty()) {
-                    botaoApagarTudo.setText("Apagar tudo");
+                    botaoApagarTudo.setText(R.string.botaoApagarTudo);
                 } else {
-                    botaoApagarTudo.setText("Apagar");
+                    botaoApagarTudo.setText(R.string.botaoApagar);
                 }
             }
         }

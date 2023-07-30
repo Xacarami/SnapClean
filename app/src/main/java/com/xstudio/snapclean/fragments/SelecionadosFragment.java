@@ -2,8 +2,6 @@
 package com.xstudio.snapclean.fragments;
 
 import android.app.AlertDialog;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -42,7 +40,6 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnItemClickListener {
     private ArrayList<DocumentFile> listaDeExclusao;
     TextView quantidadeTotal;
@@ -88,8 +85,8 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
         imagemTelaInteira = view.findViewById(R.id.imagem_tela_inteira);
 
-        quantidadeTotal = getView().findViewById(R.id.quantidade_total);
-        textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+        quantidadeTotal = requireView().findViewById(R.id.quantidade_total);
+        textificandoTotal = getText(R.string.quantidade) + String.valueOf(listaDeExclusao.size());
         quantidadeTotal.setText(textificandoTotal);
 
         ImageButton selecionador = view.findViewById(R.id.selecionador);
@@ -107,9 +104,9 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
             if (adapter.getListaDeSelecionados().size() > 0) {
                 System.out.println("Recuperar");
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Recuperar imagens");
-                builder.setMessage("Tem certeza de que deseja recuperar as imagens selecionadas?");
-                builder.setPositiveButton("Sim", (dialog, which) -> {
+                builder.setTitle(R.string.tituloRecuperarImagens);
+                builder.setMessage(R.string.mensagemCertezaDeRecuperarImagensSelecionadas);
+                builder.setPositiveButton(R.string.botaoPositivoSim, (dialog, which) -> {
                     // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
                     System.out.println("SIM");
                     ArrayList<DocumentFile> listaDeSelecionados = adapter.getListaDeSelecionados();
@@ -123,19 +120,19 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         }
                     }
                     adapter.desselecionarTodas();
-                    textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                    textificandoTotal = getText(R.string.quantidade) + String.valueOf(listaDeExclusao.size());
                     quantidadeTotal.setText(textificandoTotal);
                     backupDaLista();
                 });
-                builder.setNegativeButton("Não", (dialog, which) -> {
+                builder.setNegativeButton(R.string.botaoNegativoNao, (dialog, which) -> {
                     // Usuário escolheu não recuperar as imagens
                 });
                 builder.show();
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Recuperar imagens");
-                builder.setMessage("Tem certeza de que deseja recuperar todas as imagens?");
-                builder.setPositiveButton("Sim", (dialog, which) -> {
+                builder.setTitle(R.string.tituloRecuperarImagens);
+                builder.setMessage(R.string.mensagemCertezaDeRecuperarTodasAsImagens);
+                builder.setPositiveButton(R.string.botaoPositivoSim, (dialog, which) -> {
                     // Coloque aqui o código que deve ser executado se o usuário escolher recuperar as imagens
                     System.out.println("SIM");
                     List<DocumentFile> temp = new ArrayList<>(listaDeExclusao);
@@ -146,11 +143,11 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         }
                     }
                     adapter.desselecionarTodas();
-                    textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                    textificandoTotal = getText(R.string.quantidade) + String.valueOf(listaDeExclusao.size());
                     quantidadeTotal.setText(textificandoTotal);
                     backupDaLista();
                 });
-                builder.setNegativeButton("Não", (dialog, which) -> {
+                builder.setNegativeButton(R.string.botaoNegativoNao, (dialog, which) -> {
                     // Usuário escolheu não recuperar as imagens
                 });
                 builder.show();
@@ -162,9 +159,9 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
             if (adapter.getListaDeSelecionados().size() > 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Apagar arquivos selecionados");
-                builder.setMessage("Tem certeza de que deseja apagar os arquivos selecionados?\nOs aquivos não poderão ser recuperados depois!");
-                builder.setPositiveButton("Sim", (dialog, which) -> {
+                builder.setTitle(R.string.tituloApagarImagensSelecionadas);
+                builder.setMessage(R.string.mensagemCertezaDeApagarImagensSelecionadas);
+                builder.setPositiveButton(R.string.botaoPositivoSim, (dialog, which) -> {
                     // Usuário escolheu apagar as imagens selecionadas
                     System.out.println("Apagar mesmo");
                     for (DocumentFile arquivo : adapter.getListaDeSelecionados()) {
@@ -178,12 +175,12 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         listener.onArquivoRecuperado(null);
                     }
                     adapter.desselecionarTodas();
-                    textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                    textificandoTotal = getText(R.string.quantidade) + String.valueOf(listaDeExclusao.size());
                     quantidadeTotal.setText(textificandoTotal);
                     backupDaLista();
                 });
 
-                builder.setNegativeButton("Não", (dialog, which) -> {
+                builder.setNegativeButton(R.string.botaoNegativoNao, (dialog, which) -> {
                     // Usuário escolheu não apagar as imagens selecionadas
                     System.out.println("Não Apagar");
                 });
@@ -191,14 +188,14 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Apagar Tudo");
-                builder.setMessage("Tem certeza de que deseja apagar TODOS os arquivos?");
-                builder.setPositiveButton("Sim", (dialog, which) -> {
+                builder.setTitle(R.string.tituloApagarTudo);
+                builder.setMessage(R.string.mensagemCertezaDeApagarTodasAsImagens);
+                builder.setPositiveButton(R.string.botaoPositivoSim, (dialog, which) -> {
                     // Usuário escolheu apagar todas as imagens
                     AlertDialog.Builder builderGarantia = new AlertDialog.Builder(getContext());
-                    builderGarantia.setTitle("ALERTA!");
-                    builderGarantia.setMessage("Os aquivos não poderão ser recuperados depois!");
-                    builderGarantia.setPositiveButton("Sim", (dialogo, whichh) -> {
+                    builderGarantia.setTitle(R.string.tituloAlerta);
+                    builderGarantia.setMessage(R.string.mensagemArquivosNaoSeraoRecuperadosDepois);
+                    builderGarantia.setPositiveButton(R.string.botaoPositivoSim, (dialogo, whichh) -> {
                         System.out.println("Apagar Tudo mesmo");
                         List<DocumentFile> temp = new ArrayList<>(listaDeExclusao);
                         for (DocumentFile arquivo : temp) {
@@ -212,18 +209,18 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                             listener.onArquivoRecuperado(null);
                         }
                         adapter.desselecionarTodas();
-                        textificandoTotal = "Quantidade: " + listaDeExclusao.size();
+                        textificandoTotal = getText(R.string.quantidade) + String.valueOf(listaDeExclusao.size());
                         quantidadeTotal.setText(textificandoTotal);
                         backupDaLista();
                     });
-                    builderGarantia.setNegativeButton("Não", (dialogo, whichh) -> {
+                    builderGarantia.setNegativeButton(R.string.botaoNegativoNao, (dialogo, whichh) -> {
                         // Usuário escolheu não apagar todas as imagens
                         System.out.println("Não Apagar Tudo");
                     });
                     builderGarantia.show();
                 });
 
-                builder.setNegativeButton("Não", (dialog, which) -> {
+                builder.setNegativeButton(R.string.botaoNegativoNao, (dialog, which) -> {
                     // Usuário escolheu não apagar todas as imagens
                     System.out.println("Não Apagar Tudo");
                 });
@@ -238,9 +235,10 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
         //inflar o layout do fragment
         View rootView = inflater.inflate(R.layout.fragment_selecionados, container, false);
 
-        ConstraintLayout layoutPrincipal = getActivity().findViewById(R.id.layout_principal);
+        ConstraintLayout layoutPrincipal = requireActivity().findViewById(R.id.layout_principal);
         ImageButton voltarSelecionados = rootView.findViewById(R.id.voltar_selecionados);
-        numeroLixeira = getActivity().findViewById(R.id.numero_lixeira);
+
+        numeroLixeira = requireActivity().findViewById(R.id.numero_lixeira);
 
         voltarSelecionados.setOnClickListener(v -> {
             layoutPrincipal.setVisibility(View.VISIBLE);
@@ -353,51 +351,41 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
     };
 
     TextView numeroLixeira;
+    public boolean telaAumentada = false;
     @Override
     public void onBotaoImagemClicked(DocumentFile arquivo) {
         String caminhoArquivo = arquivo.getUri().toString();
-        ConstraintLayout quadrosExcluidos = getView().findViewById(R.id.quadros_excluidos);
+        ConstraintLayout quadrosExcluidos = requireView().findViewById(R.id.quadros_excluidos);
         quadrosExcluidos.setVisibility(View.GONE);
+        telaAumentada = true;
 
         String extensao = arquivo.getName();
 
-        layoutImagens = getView().findViewById(R.id.layout_imagens);
+        layoutImagens = requireView().findViewById(R.id.layout_imagens);
         layoutImagens.setVisibility(View.VISIBLE);
 
-        ImageButton selecionador = getView().findViewById(R.id.selecionador);
+        ImageButton selecionador = requireView().findViewById(R.id.selecionador);
         selecionador.setVisibility(View.GONE);
 
-        ImageButton voltarSelecionados = getView().findViewById(R.id.voltar_selecionados);
+        ImageButton voltarSelecionados = requireView().findViewById(R.id.voltar_selecionados);
 
-        imageView = getView().findViewById(R.id.imagem_tela_inteira);
-        videoView = getView().findViewById(R.id.video_tela_inteira);
-        constraintAudio = getView().findViewById(R.id.constraint_audio_tela_inteira);
-        extensaoDesconhecida = getView().findViewById(R.id.constraint_extensao_desconhecida_tela_inteira);
-        boolean autoplaySwitch = ((MainActivity) getActivity()).isAutoplayChecked();
+        imageView = requireView().findViewById(R.id.imagem_tela_inteira);
+        videoView = requireView().findViewById(R.id.video_tela_inteira);
+        constraintAudio = requireView().findViewById(R.id.constraint_audio_tela_inteira);
+        extensaoDesconhecida = requireView().findViewById(R.id.constraint_extensao_desconhecida_tela_inteira);
+        boolean autoplaySwitch = ((MainActivity) requireActivity()).isAutoplayChecked();
         //autoplaySwitch = getView().findViewById(R.id.switchAutoPlay);
-        seekBar = getView().findViewById(R.id.seek_bar_tela_inteira);
-        textoAviso = getView().findViewById(R.id.texto_aviso_tela_inteira);
-        setaBaixo = getView().findViewById(R.id.ic_seta_baixo);
-        textoNomeArquivo = getView().findViewById(R.id.texto_nome_arquivo_tela_inteira);
-        tempoAudioMaximo = getView().findViewById(R.id.tempo_audio_maximo_tela_inteira);
-        tempoAudioPercorrido = getView().findViewById(R.id.tempo_audio_percorrido_tela_inteira);
-        nomeAudio = getView().findViewById(R.id.nome_audio_tela_inteira);
+        seekBar = requireView().findViewById(R.id.seek_bar_tela_inteira);
+        textoAviso = requireView().findViewById(R.id.texto_aviso_tela_inteira);
+        setaBaixo = requireView().findViewById(R.id.ic_seta_baixo);
+        textoNomeArquivo = requireView().findViewById(R.id.texto_nome_arquivo_tela_inteira);
+        tempoAudioMaximo = requireView().findViewById(R.id.tempo_audio_maximo_tela_inteira);
+        tempoAudioPercorrido = requireView().findViewById(R.id.tempo_audio_percorrido_tela_inteira);
+        nomeAudio = requireView().findViewById(R.id.nome_audio_tela_inteira);
 
         setaBaixo.setVisibility(View.VISIBLE);
         voltarSelecionados.setVisibility(View.GONE);
-        setaBaixo.setOnClickListener(v -> {
-            quadrosExcluidos.setVisibility(View.VISIBLE);
-            layoutImagens.setVisibility(View.GONE);
-            selecionador.setVisibility(View.VISIBLE);
-            voltarSelecionados.setVisibility(View.VISIBLE);
-            setaBaixo.setVisibility(View.GONE);
-            if (mediaPlayer != null) {
-                mediaPlayer.pause();
-            }
-            if (videoView != null) {
-                videoView.pause();
-            }
-        });
+        setaBaixo.setOnClickListener(v -> minimizarTelaCheia());
 
         //Para a tela cheia
         if (arquivo.getType() != null && extensao != null) {
@@ -434,7 +422,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                 videoView.setVisibility(View.GONE);
 
                 try {
-                    ParcelFileDescriptor parcelFileDescriptor = getActivity().getContentResolver().openFileDescriptor(arquivo.getUri(), "r");
+                    ParcelFileDescriptor parcelFileDescriptor = requireActivity().getContentResolver().openFileDescriptor(arquivo.getUri(), "r");
                     if (parcelFileDescriptor != null) {
                         FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
 
@@ -458,9 +446,9 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
                         //nomeAudio.setText(arquivo.getName());
                         nomeAudio.setText(title);
 
-                        playButton = getView().findViewById(R.id.play_button_tela_inteira);
-                        pauseButton = getView().findViewById(R.id.pause_button_tela_inteira);
-                        seekBar = getView().findViewById(R.id.seek_bar_tela_inteira);
+                        playButton = requireView().findViewById(R.id.play_button_tela_inteira);
+                        pauseButton = requireView().findViewById(R.id.pause_button_tela_inteira);
+                        seekBar = requireView().findViewById(R.id.seek_bar_tela_inteira);
 
                         playButton.setVisibility(View.VISIBLE);
                         pauseButton.setVisibility(View.GONE);
@@ -533,7 +521,7 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
                 extensaoDesconhecida.setVisibility(View.VISIBLE);
                 textoNomeArquivo.setText(arquivo.getName());
-                textoAviso.setText("Extensão não suportada");
+                textoAviso.setText(R.string.extensaoNaoSuportada);
 
                 System.out.println("---------------------");
             }
@@ -545,7 +533,26 @@ public class SelecionadosFragment extends Fragment implements ImagemAdapter.OnIt
 
             extensaoDesconhecida.setVisibility(View.VISIBLE);
             textoNomeArquivo.setText(arquivo.getName());
-            textoAviso.setText("Extensão não encontrada");
+            textoAviso.setText(R.string.extensaoNaoEncontrada);
+        }
+    }
+
+    //Fecha a tela cheia do arquivo, e volta para a fragment selecionados
+    public void minimizarTelaCheia(){
+        ConstraintLayout quadrosExcluidos = requireView().findViewById(R.id.quadros_excluidos);
+        ImageButton selecionador = requireView().findViewById(R.id.selecionador);
+        ImageButton voltarSelecionados = requireView().findViewById(R.id.voltar_selecionados);
+        quadrosExcluidos.setVisibility(View.VISIBLE);
+        layoutImagens.setVisibility(View.GONE);
+        selecionador.setVisibility(View.VISIBLE);
+        voltarSelecionados.setVisibility(View.VISIBLE);
+        setaBaixo.setVisibility(View.GONE);
+        telaAumentada = false;
+        if (mediaPlayer != null) {
+            mediaPlayer.pause();
+        }
+        if (videoView != null) {
+            videoView.pause();
         }
     }
 
